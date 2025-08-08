@@ -64,7 +64,7 @@ index c77ed04bb..dfe0a0ef8 100644
  &usb_hs_phy {
 -	extcon = <&pm8916_usbin>;
 +	v1p8-supply = <&pm8916_l7>;
-+	v3p3-supply = <&pm8916_l13>;
++
 +	extcon = <&usb_id>;
  };
  
