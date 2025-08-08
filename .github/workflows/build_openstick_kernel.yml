@@ -19,6 +19,7 @@ jobs:
       ARCH: arm64
       CROSS_COMPILE: aarch64-linux-gnu-
       DEB_VERSION: ${{ github.run_id }}  # 用运行ID确保版本唯一性
+      TERM: xterm
 
     steps:
     # 1. 环境初始化
