@@ -1,8 +1,8 @@
 diff --git a/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi b/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
-index c77ed04bb..8e2df0c2e 100644
+index c77ed04bb..6f7adf608 100644
 --- a/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
 +++ b/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
-@@ -46,6 +53,7 @@ leds {
+@@ -46,6 +46,7 @@ leds {
                 led_r: led-r {
                         color = <LED_COLOR_ID_RED>;
                         default-state = "on";
@@ -10,13 +10,11 @@ index c77ed04bb..8e2df0c2e 100644
                         function = LED_FUNCTION_POWER;
                 };
 
-@@ -58,8 +66,10 @@ led_g: led-g {
+@@ -58,6 +59,7 @@ led_g: led-g {
                 led_b: led-b {
                         color = <LED_COLOR_ID_BLUE>;
                         default-state = "off";
 +                       linux,default-trigger = "phy0tx";
                         function = LED_FUNCTION_WAN;
                 };
-+
         };
- };
