@@ -1,0 +1,81 @@
+name: Build ARM64 Kernel with DEB Packaging
+
+on:
+  workflow_dispatch:  # 手动触发
+    inputs:
+      kernel_version:
+        description: 'Kernel version (e.g. v6.6)'
+        required: true
+        default: 'v6.6'
+      config_profile:
+        description: 'Config profile (defconfig/custom)'
+        required: true
+        default: 'defconfig'
+
+jobs:
+  build_kernel:
+    runs-on: ubuntu-22.04
+    env:
+      ARCH: arm64
+      CROSS_COMPILE: aarch64-linux-gnu-
+      DEB_VERSION: ${{ github.run_id }}  # 用运行ID确保版本唯一性
+
+    steps:
+    # 1. 环境初始化
+    - name: Setup Build Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential libncurses-dev libssl-dev bc flex bison \
+          gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools
+      # 安装编译依赖项 [5,6](@ref)
+
+    # 2. 获取内核源码
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v4
+      with:
+        repository: torvalds/linux
+        ref: ${{ inputs.kernel_version }}  # 使用输入的内核版本
+        path: linux-src
+
+    # 3. 内核配置
+    - name: Configure Kernel
+      run: |
+        cd linux-src
+        case "${{ inputs.config_profile }}" in
+          defconfig)
+            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE defconfig
+            ;;
+          custom)
+            cp ../.config .  # 使用仓库中的自定义配置
+            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
+            ;;
+        esac
+        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE menuconfig  # 可选图形化调整
+      # 配置流程参考 [4,6](@ref)
+
+    # 4. 编译内核与生成DEB包
+    - name: Build Kernel & DEB Packages
+      run: |
+        cd linux-src
+        # 编译内核与模块
+        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j$(nproc) all
+        
+        # 生成DEB安装包
+        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
+          KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
+          KBUILD_DEBARCH=arm64 \
+          bindeb-pkg
+        # DEB打包方法 [6](@ref)
+        
+        # 重命名输出文件
+        mv ../linux-*.deb ../artifacts/
+
+    # 5. 上传制品
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-${{ inputs.kernel_version }}-arm64-debs
+        path: |
+          artifacts/*.deb
+          linux-src/arch/arm64/boot/Image
