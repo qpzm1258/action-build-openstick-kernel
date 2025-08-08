@@ -88,6 +88,7 @@ jobs:
         # DEB打包方法 [6](@ref)
         
         # 重命名输出文件
+        mkdir -p $GITHUB_WORKSPACE/artifacts/
         mv ../linux-*.deb ../artifacts/
 
     # 5. 上传制品
