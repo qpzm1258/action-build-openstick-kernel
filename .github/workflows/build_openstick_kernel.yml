@@ -18,9 +18,10 @@ on:
 
 jobs:
   build_kernel:
-    runs-on: ubuntu-latest-arm64
+    runs-on: ubuntu-latest
     env:
       ARCH: arm64
+      CROSS_COMPILE: aarch64-linux-gnu-
       DEB_VERSION: ${{ github.run_id }}  # 用运行ID确保版本唯一性
       TERM: xterm
 
@@ -33,6 +34,9 @@ jobs:
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev
+        sudo dpkg --add-architecture arm64
+        sudo apt-get update
+        sudo apt-get install libssl-dev:arm64
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
@@ -55,11 +59,11 @@ jobs:
         cd linux-src
         case "${{ inputs.config_profile }}" in
           defconfig)
-            make ARCH=$ARCH msm8916_defconfig
+            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE msm8916_defconfig
             ;;
           custom)
             cp $GITHUB_WORKSPACE/workspace/.config .  # 使用仓库中的自定义配置
-            make ARCH=$ARCH olddefconfig
+            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
             ;;
         esac
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
@@ -77,10 +81,10 @@ jobs:
       run: |
         cd linux-src
         # 编译内核与模块
-        make ARCH=$ARCH -j$(nproc) all
+        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j$(nproc) all
         
         # 生成DEB安装包
-        make ARCH=$ARCH \
+        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
           KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
           KBUILD_DEBARCH=arm64 \
           bindeb-pkg
