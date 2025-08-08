@@ -99,3 +99,5 @@ jobs:
         path: |
           artifacts/*.deb
           linux-src/arch/arm64/boot/Image
+          linux-src/arch/arm64/boot/dts/qcom/msm8916-thwc-ufi001c.dtb
+
