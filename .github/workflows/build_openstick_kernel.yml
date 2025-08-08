@@ -18,7 +18,7 @@ on:
 
 jobs:
   build_kernel:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       ARCH: arm64
       CROSS_COMPILE: aarch64-linux-gnu-
@@ -33,7 +33,7 @@ jobs:
         sudo apt-get install -y \
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools \
-          debhelper
+          debhelper libelf-dev libssl-dev
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
