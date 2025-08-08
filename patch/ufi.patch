@@ -3,18 +3,18 @@ index c77ed04bb..6f7adf608 100644
 --- a/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
 +++ b/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
 @@ -46,6 +46,7 @@ leds {
-                led_r: led-r {
-                        color = <LED_COLOR_ID_RED>;
-                        default-state = "on";
-+                       linux,default-trigger = "heartbeat";
-                        function = LED_FUNCTION_POWER;
-                };
-
+ 		led_r: led-r {
+ 			color = <LED_COLOR_ID_RED>;
+ 			default-state = "on";
++			linux,default-trigger = "heartbeat";
+ 			function = LED_FUNCTION_POWER;
+ 		};
+ 
 @@ -58,6 +59,7 @@ led_g: led-g {
-                led_b: led-b {
-                        color = <LED_COLOR_ID_BLUE>;
-                        default-state = "off";
-+                       linux,default-trigger = "phy0tx";
-                        function = LED_FUNCTION_WAN;
-                };
-        };
+ 		led_b: led-b {
+ 			color = <LED_COLOR_ID_BLUE>;
+ 			default-state = "off";
++			linux,default-trigger = "phy0tx";
+ 			function = LED_FUNCTION_WAN;
+ 		};
+ 	};
