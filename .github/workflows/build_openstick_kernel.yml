@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       ARCH: arm64
-      CROSS_COMPILE: aarch64-linux-gnu-
       DEB_VERSION: ${{ github.run_id }}  # 用运行ID确保版本唯一性
       TERM: xterm
 
@@ -56,11 +55,11 @@ jobs:
         cd linux-src
         case "${{ inputs.config_profile }}" in
           defconfig)
-            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE msm8916_defconfig
+            make ARCH=$ARCH msm8916_defconfig
             ;;
           custom)
             cp $GITHUB_WORKSPACE/workspace/.config .  # 使用仓库中的自定义配置
-            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
+            make ARCH=$ARCH olddefconfig
             ;;
         esac
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
@@ -78,10 +77,10 @@ jobs:
       run: |
         cd linux-src
         # 编译内核与模块
-        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j$(nproc) all
+        make ARCH=$ARCH -j$(nproc) all
         
         # 生成DEB安装包
-        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
+        make ARCH=$ARCH \
           KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
           KBUILD_DEBARCH=arm64 \
           bindeb-pkg
@@ -89,6 +88,7 @@ jobs:
         
         # 重命名输出文件
         mkdir -p $GITHUB_WORKSPACE/artifacts/
+        cat arch/arm64/boot/Image.gz arch/arm64/boot/dts/qcom/msm8916-thwc-ufi001c.dtb > $GITHUB_WORKSPACE/artifacts/kernel-dtb
         mv ../linux-*.deb ../artifacts/
 
     # 5. 上传制品
@@ -97,7 +97,7 @@ jobs:
       with:
         name: kernel-${{ inputs.kernel_version }}-arm64-debs
         path: |
-          artifacts/*.deb
+          artifacts/*
           linux-src/arch/arm64/boot/Image
           linux-src/arch/arm64/boot/dts/qcom/msm8916-thwc-ufi001c.dtb
 
