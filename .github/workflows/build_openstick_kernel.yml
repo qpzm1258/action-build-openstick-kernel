@@ -34,9 +34,6 @@ jobs:
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev
-        sudo dpkg --add-architecture arm64
-        sudo apt-get update
-        sudo apt-get install libssl-dev:arm64
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
