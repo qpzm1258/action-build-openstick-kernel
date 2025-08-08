@@ -53,7 +53,7 @@ jobs:
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE msm8916_defconfig
             ;;
           custom)
-            cp ../.config .  # 使用仓库中的自定义配置
+            cp .config linux-src/.config  # 使用仓库中的自定义配置
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
             ;;
         esac
