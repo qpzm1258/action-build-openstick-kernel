@@ -6,11 +6,15 @@ on:
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
-        default: 'v6.6'
+        default: 'v6.12.1-msm8916'
       config_profile:
         description: 'Config profile (defconfig/custom)'
         required: true
         default: 'defconfig'
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
 
 jobs:
   build_kernel:
@@ -35,7 +39,7 @@ jobs:
     - name: Checkout Kernel Source
       uses: actions/checkout@v4
       with:
-        repository: torvalds/linux
+        repository: msm8916-mainline/linux
         ref: ${{ inputs.kernel_version }}  # 使用输入的内核版本
         path: linux-src
 
@@ -52,7 +56,12 @@ jobs:
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
             ;;
         esac
-        
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}    
       # 配置流程参考 [4,6](@ref)
 
     # 4. 编译内核与生成DEB包
