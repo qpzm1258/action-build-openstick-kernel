@@ -10,7 +10,7 @@ on:
       config_profile:
         description: 'Config profile (defconfig/custom)'
         required: true
-        default: 'defconfig'
+        default: 'custom'
       ssh:
         description: 'SSH connection to Actions'
         required: false
@@ -32,7 +32,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           build-essential libncurses-dev libssl-dev bc flex bison \
-          gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools
+          gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools \
+          debhelper
       # 安装编译依赖项 [5,6](@ref)
 
     # 2. 获取内核源码
