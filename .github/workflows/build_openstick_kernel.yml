@@ -49,7 +49,7 @@ jobs:
         cd linux-src
         case "${{ inputs.config_profile }}" in
           defconfig)
-            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE defconfig
+            make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE msm8916_defconfig
             ;;
           custom)
             cp ../.config .  # 使用仓库中的自定义配置
