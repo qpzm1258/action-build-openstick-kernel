@@ -18,7 +18,7 @@ on:
 
 jobs:
   build_kernel:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     env:
       ARCH: arm64
       CROSS_COMPILE: aarch64-linux-gnu-
