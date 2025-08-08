@@ -53,6 +53,7 @@ jobs:
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE msm8916_defconfig
             ;;
           custom)
+            ls -l $GITHUB_WORKSPACE/
             cp $GITHUB_WORKSPACE/.config .  # 使用仓库中的自定义配置
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
             ;;
