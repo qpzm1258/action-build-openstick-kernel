@@ -52,7 +52,7 @@ jobs:
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
             ;;
         esac
-        make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE menuconfig  # 可选图形化调整
+        
       # 配置流程参考 [4,6](@ref)
 
     # 4. 编译内核与生成DEB包
