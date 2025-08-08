@@ -36,7 +36,13 @@ jobs:
           debhelper
       # 安装编译依赖项 [5,6](@ref)
 
-    # 2. 获取内核源码
+    # 2-1. 获取本项目源码
+    - name: Checkout Workflow Repo
+      uses: actions/checkout@v4
+      with:
+        path: workspace
+
+    # 2-2. 获取内核源码
     - name: Checkout Kernel Source
       uses: actions/checkout@v4
       with:
@@ -53,8 +59,7 @@ jobs:
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE msm8916_defconfig
             ;;
           custom)
-            ls -l $GITHUB_WORKSPACE/
-            cp $GITHUB_WORKSPACE/.config .  # 使用仓库中的自定义配置
+            cp $GITHUB_WORKSPACE/workspace/.config .  # 使用仓库中的自定义配置
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
             ;;
         esac
