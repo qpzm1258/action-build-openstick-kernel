@@ -1,0 +1,83 @@
+commit da0e291dd457af4551f51f48b2493ab9c104d8f5
+Author: root <root@ShinR7-PC.lan>
+Date:   Sat Apr 19 22:53:02 2025 +0800
+
+    Modify DTB to UFI
+
+diff --git a/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi b/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
+index c77ed04bb..dfe0a0ef8 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
+@@ -32,6 +32,13 @@ button_restart: button-restart {
+ 		};
+ 	};
+ 
++	usb_id: usb-id {
++		compatible = "linux,extcon-usb-gpio";
++		id-gpios = <&tlmm 110 GPIO_ACTIVE_HIGH>;
++		pinctrl-0 = <&usb_id_default>;
++		pinctrl-names = "default";
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+@@ -46,6 +53,7 @@ leds {
+ 		led_r: led-r {
+ 			color = <LED_COLOR_ID_RED>;
+ 			default-state = "on";
++			linux,default-trigger = "heartbeat";
+ 			function = LED_FUNCTION_POWER;
+ 		};
+ 
+@@ -58,8 +66,10 @@ led_g: led-g {
+ 		led_b: led-b {
+ 			color = <LED_COLOR_ID_BLUE>;
+ 			default-state = "off";
++			linux,default-trigger = "phy0tx";
+ 			function = LED_FUNCTION_WAN;
+ 		};
++
+ 	};
+ };
+ 
+@@ -93,23 +103,19 @@ &mpss_mem {
+ 	status = "okay";
+ };
+ 
+-&pm8916_usbin {
+-	status = "okay";
+-};
+-
+ &sdhc_1 {
+ 	status = "okay";
+ };
+ 
+ &usb {
+-	extcon = <&pm8916_usbin>;
+-	usb-role-switch;
+-
++	extcon = <&usb_id>, <&usb_id>;	
+ 	status = "okay";
+ };
+ 
+ &usb_hs_phy {
+-	extcon = <&pm8916_usbin>;
++	v1p8-supply = <&pm8916_l7>;
++	v3p3-supply = <&pm8916_l13>;
++	extcon = <&usb_id>;
+ };
+ 
+ &venus {
+@@ -144,4 +150,11 @@ gpio_leds_default: gpio-leds-default-state {
+ 		drive-strength = <2>;
+ 		bias-disable;
+ 	};
++
++	usb_id_default: usb-id-default-state {
++		pins = "gpio110";
++		function = "gpio";
++		drive-strength = <8>;
++		bias-pull-up;
++	};
+ };

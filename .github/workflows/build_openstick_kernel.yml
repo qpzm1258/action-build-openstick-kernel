@@ -34,6 +34,9 @@ jobs:
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev
+        sudo dpkg --add-architecture arm64
+        sudo apt-get update
+        sudo apt-get install libssl-dev:arm64
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
@@ -63,6 +66,8 @@ jobs:
             make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE olddefconfig
             ;;
         esac
+        git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
+
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
