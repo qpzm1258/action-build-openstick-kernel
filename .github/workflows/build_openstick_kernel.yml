@@ -146,6 +146,7 @@ jobs:
           exit 1
         fi
         echo "✅ 使用的 initrd: $INITRD"
+        cp $INITRD $GITHUB_WORKSPACE/artifacts/
         mkbootimg \
           --base 0x80000000 \
           --kernel_offset 0x00080000 \
@@ -153,10 +154,10 @@ jobs:
           --tags_offset 0x01e00000 \
           --pagesize 2048 \
           --second_offset 0x00f00000 \
-          --ramdisk "$INITRD" \
+          --ramdisk $INITRD \
           --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,nodatacow,noatime,space_cache=v2,recovery console=ttyMSM0,115200 no_framebuffer=true rw" \
           --kernel $GITHUB_WORKSPACE/artifacts/kernel-dtb \
-          -o $GITHUB_WORKSPACE/artifacts/boot.img
+          -o $GITHUB_WORKSPACE/boot.img
         echo "status=success" >>$GITHUB_OUTPUT
     # 8. 打包roofs.img
     - name: Package Rootfs
@@ -168,7 +169,7 @@ jobs:
         sudo umount rootfs/dev
         sudo umount rootfs/sys
         sudo umount rootfs
-        img2simg root.img $GITHUB_WORKSPACE/artifacts/rootfs.img
+        img2simg root.img $GITHUB_WORKSPACE/rootfs.img
         echo "status=success" >>$GITHUB_OUTPUT
 
     # 9. 上传制品
@@ -200,8 +201,8 @@ jobs:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
         files: | 
-          artifacts/rootfs.img
-          artifacts/boot.img
+          rootfs.img
+          boot.img
 
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
