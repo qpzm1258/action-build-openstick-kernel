@@ -10,7 +10,6 @@ on:
         options:
           - bookworm
           - trixie
-          - bullseye
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
@@ -112,12 +111,14 @@ jobs:
         sudo mkfs.btrfs --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
         mkdir -p rootfs 
         sudo mount -o compress=zstd,defaults,noatime,space_cache=v2,nodatacow root.img rootfs/
-        sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/debian13.tar.gz -C rootfs
+        sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/${{ inputs.debian_version }}.tar.gz -C rootfs
         sudo mount --bind /proc rootfs/proc 
         sudo mount --bind /dev rootfs/dev 
         sudo mount --bind /dev/pts rootfs/dev/pts 
         sudo mount --bind /sys rootfs/sys
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
+        sudo cp $GITHUB_WORKSPACE/workspace/files/*.rules rootfs/etc/udev/rules.d/
+        sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
         echo "status=success" >>$GITHUB_OUTPUT
   
     # 7. 生成boot.img
@@ -125,7 +126,7 @@ jobs:
       id: bootimg
       if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
-        sudo chroot rootfs /bin/bash -c "rm -f /etc/profile.d/mobile-tweaks-mali.sh"
+        sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
