@@ -155,7 +155,7 @@ jobs:
           --pagesize 2048 \
           --second_offset 0x00f00000 \
           --ramdisk $INITRD \
-          --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,nodatacow,noatime,space_cache=v2,recovery console=ttyMSM0,115200 no_framebuffer=true rw" \
+          --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,nodatacow,noatime,space_cache=v2 console=ttyMSM0,115200 no_framebuffer=true rw" \
           --kernel $GITHUB_WORKSPACE/artifacts/kernel-dtb \
           -o $GITHUB_WORKSPACE/boot.img
         echo "status=success" >>$GITHUB_OUTPUT
