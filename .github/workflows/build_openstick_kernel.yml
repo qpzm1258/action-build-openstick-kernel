@@ -93,6 +93,7 @@ jobs:
         mkdir -p $GITHUB_WORKSPACE/artifacts/
         cat arch/arm64/boot/Image.gz arch/arm64/boot/dts/qcom/msm8916-thwc-ufi001c.dtb > $GITHUB_WORKSPACE/artifacts/kernel-dtb
         mv ../linux-*.deb ../artifacts/
+        echo "status=success" >>$GITHUB_OUTPUT
 
     # 5. 生成root.img,格式化为btrfs格式
     - name: Build Rootfs
@@ -109,6 +110,7 @@ jobs:
         sudo mount --bind /dev/pts rootfs/dev/pts 
         sudo mount --bind /sys rootfs/sys
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
+        echo "status=success" >>$GITHUB_OUTPUT
 
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
@@ -146,7 +148,7 @@ jobs:
           --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,nodatacow,noatime,space_cache=v2,recovery console=ttyMSM0,115200 no_framebuffer=true rw" \
           --kernel $GITHUB_WORKSPACE/artifacts/kernel-dtb \
           -o $GITHUB_WORKSPACE/artifacts/boot.img
-
+        echo "status=success" >>$GITHUB_OUTPUT
     # 8. 打包roofs.img
     - name: Package Rootfs
       id: rootfs
@@ -158,9 +160,11 @@ jobs:
         sudo umount rootfs/sys
         sudo umount rootfs
         img2simg root.img $GITHUB_WORKSPACE/artifacts/rootfs.img
+        echo "status=success" >>$GITHUB_OUTPUT
 
     # 9. 上传制品
     - name: Upload Artifacts
+      if: steps.kernel.outputs.status == 'success' && !cancelled()
       uses: actions/upload-artifact@v4
       with:
         name: kernel-${{ inputs.kernel_version }}-arm64-debs
@@ -171,11 +175,36 @@ jobs:
 
     - name: Generate release tag
       id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: steps.rootfs.outputs.status == 'success' && steps.bootimg.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt
         [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
 
+    - name: Upload firmware to release
+      uses: softprops/action-gh-release@master
+      if: steps.tag.outputs.status == 'success' && !cancelled()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body_path: release.txt
+        files: artifacts/rootfs.img
+          artifacts/boot.img
+
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 1
+        keep_minimum_runs: 3
+
+    - name: Remove old Releases
+      uses: dev-drprasad/delete-older-releases@master
+      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      with:
+        keep_latest: 1
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
