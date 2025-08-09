@@ -15,6 +15,11 @@ on:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
+      upload_release:
+        description: 'Upload firmware to release'
+        required: false
+        default: 'false'
+
 
 jobs:
   build_kernel:
@@ -23,6 +28,7 @@ jobs:
       ARCH: arm64
       DEB_VERSION: ${{ github.run_id }}  # 用运行ID确保版本唯一性
       TERM: xterm
+      UPLOAD_RELEASE: ${{ inputs.upload_release }}
 
     steps:
     # 1. 环境初始化
@@ -35,7 +41,7 @@ jobs:
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
-          sudo dpkg -i android-tools-mkbootimg_34.0.5-3_arm64.deb
+          sudo dpkg -i mkbootimg_34.0.5-12_all.deb
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
@@ -162,4 +168,14 @@ jobs:
           artifacts/*
           linux-src/arch/arm64/boot/Image
           linux-src/arch/arm64/boot/dts/qcom/msm8916-thwc-ufi001c.dtb
+
+    - name: Generate release tag
+      id: tag
+      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
+        echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
+        touch release.txt
+        [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
+        echo "status=success" >> $GITHUB_OUTPUT
+
 
