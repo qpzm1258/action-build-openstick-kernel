@@ -185,7 +185,7 @@ jobs:
       id: tag
       if: steps.rootfs.outputs.status == 'success' && steps.bootimg.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "release_tag=debian ${{ inputs.debian_version }} with kernel ${{ inputs.kernel_version }}" >> $GITHUB_OUTPUT
+        echo "release_tag=debian-${{ inputs.debian_version }}-kernel-${{ inputs.kernel_version }}" >> $GITHUB_OUTPUT
         touch release.txt
         [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
