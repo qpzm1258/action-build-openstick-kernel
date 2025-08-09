@@ -3,6 +3,10 @@ name: Build ARM64 Kernel with DEB Packaging
 on:
   workflow_dispatch:  # 手动触发
     inputs:
+      debian_version:
+        description: 'debian version (support 12 or 13)'
+        required: true
+        default: '13'
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
@@ -177,7 +181,7 @@ jobs:
       id: tag
       if: steps.rootfs.outputs.status == 'success' && steps.bootimg.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
+        echo "release_tag=debian ${{ inputs.debian_version }} with kernel ${{ inputs.kernel_version }}" >> $GITHUB_OUTPUT
         touch release.txt
         [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
