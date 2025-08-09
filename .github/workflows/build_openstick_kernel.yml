@@ -114,7 +114,8 @@ jobs:
     # 7. 生成boot.img
     - name: Build Boot img
       run: |
-        sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*""
+        sudo chroot rootfs /bin/bash -c "rm -f /etc/profile.d/mobile-tweaks-mali.sh"
+        sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
         sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
