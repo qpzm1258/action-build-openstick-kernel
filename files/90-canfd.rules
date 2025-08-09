@@ -1,0 +1,1 @@
+ACTION=="add", KERNEL=="can0", RUN+="/usr/local/bin/canfd-setup.sh"
