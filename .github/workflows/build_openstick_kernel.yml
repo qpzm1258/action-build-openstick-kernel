@@ -44,7 +44,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           build-essential libncurses-dev libssl-dev bc flex bison \
-          gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools \
+          gcc-14 g++-14 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
@@ -72,11 +72,11 @@ jobs:
         cd linux-src
         case "${{ inputs.config_profile }}" in
           defconfig)
-            make ARCH=$ARCH msm8916_defconfig
+            make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
             ;;
           custom)
             cp $GITHUB_WORKSPACE/workspace/.config .  # 使用仓库中的自定义配置
-            make ARCH=$ARCH olddefconfig
+            make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
             ;;
         esac
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
@@ -94,10 +94,11 @@ jobs:
       run: |
         cd linux-src
         # 编译内核与模块
-        make ARCH=$ARCH -j$(nproc) all
+        make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 -j$(nproc) all
         
         # 生成DEB安装包
         make ARCH=$ARCH \
+          CC=gcc-14 HOSTCC=gcc-14 \
           KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
           KBUILD_DEBARCH=arm64 \
           bindeb-pkg
