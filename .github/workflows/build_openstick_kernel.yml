@@ -123,6 +123,7 @@ jobs:
         sudo umount rootfs/dev/pts
         sudo umount rootfs/dev
         sudo umount rootfs/sys
+        export PYTHONPATH=/usr/share/android-tools/mkbootimg
         mkbootimg \
           --base 0x80000000 \
           --kernel_offset 0x00080000 \
