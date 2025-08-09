@@ -124,6 +124,13 @@ jobs:
         sudo umount rootfs/dev
         sudo umount rootfs/sys
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
+        INITRD=$(sudo ls -t rootfs/boot/initrd.img-* 2>/dev/null | head -n1 || true)
+        if [ -z "$INITRD" ]; then
+          echo "❌ ERROR: 未找到 rootfs/boot/initrd.img-*"
+          ls -l rootfs/boot || true
+          exit 1
+        fi
+        echo "✅ 使用的 initrd: $INITRD"
         mkbootimg \
           --base 0x80000000 \
           --kernel_offset 0x00080000 \
@@ -131,7 +138,7 @@ jobs:
           --tags_offset 0x01e00000 \
           --pagesize 2048 \
           --second_offset 0x00f00000 \
-          --ramdisk rootfs/boot/initrd.img-* \
+          --ramdisk "$INITRD" \
           --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,nodatacow,noatime,space_cache=v2,recovery console=ttyMSM0,115200 no_framebuffer=true rw" \
           --kernel $GITHUB_WORKSPACE/artifacts/kernel-dtb \
           -o $GITHUB_WORKSPACE/artifacts/boot.img
