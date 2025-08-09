@@ -33,7 +33,9 @@ jobs:
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-aarch64-linux-gnu dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
-          android-sdk-libsparse-utils mkbootimg
+          android-sdk-libsparse-utils wget
+          wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/android-tools-mkbootimg_34.0.5-3_arm64.deb
+          sudo dpkg -i android-tools-mkbootimg_34.0.5-3_arm64.deb
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
@@ -68,6 +70,7 @@ jobs:
 
     # 4. 编译内核与生成DEB包
     - name: Build Kernel & DEB Packages
+      id: kernel
       run: |
         cd linux-src
         # 编译内核与模块
@@ -87,14 +90,12 @@ jobs:
 
     # 5. 生成root.img,格式化为btrfs格式
     - name: Build Rootfs
+      id: root
+      if: steps.kernel.outputs.status == 'success' && !cancelled()
       run: |
         sudo dd if=/dev/zero of=root.img bs=1M count=1536
         sudo mkfs.btrfs --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
         mkdir -p rootfs 
-
-    # 6. 挂载rootfs并释放文件
-    - name: Mount Rootfs
-      run: |
         sudo mount -o compress=zstd,defaults,noatime,space_cache=v2,nodatacow root.img rootfs/
         sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/debian13.tar.gz -C rootfs
         sudo mount --bind /proc rootfs/proc 
@@ -109,20 +110,17 @@ jobs:
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  
-
   
     # 7. 生成boot.img
     - name: Build Boot img
+      id: bootimg
+      if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
         sudo chroot rootfs /bin/bash -c "rm -f /etc/profile.d/mobile-tweaks-mali.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
         sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
-        sudo umount rootfs/proc
-        sudo umount rootfs/dev/pts
-        sudo umount rootfs/dev
-        sudo umount rootfs/sys
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
         INITRD=$(sudo ls -t rootfs/boot/initrd.img-* 2>/dev/null | head -n1 || true)
         if [ -z "$INITRD" ]; then
@@ -145,8 +143,14 @@ jobs:
 
     # 8. 打包roofs.img
     - name: Package Rootfs
+      id: rootfs
+      if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
-        umount rootfs
+        sudo umount rootfs/proc
+        sudo umount rootfs/dev/pts
+        sudo umount rootfs/dev
+        sudo umount rootfs/sys
+        sudo umount rootfs
         img2simg root.img $GITHUB_WORKSPACE/artifacts/rootfs.img
 
     # 9. 上传制品
