@@ -1,4 +1,4 @@
-name: Build ARM64 Kernel with DEB Packaging
+name: Build Debian for Openstick
 
 on:
   workflow_dispatch:  # 手动触发
