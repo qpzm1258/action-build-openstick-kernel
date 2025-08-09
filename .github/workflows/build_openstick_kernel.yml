@@ -111,13 +111,6 @@ jobs:
         sudo mount --bind /sys rootfs/sys
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
         echo "status=success" >>$GITHUB_OUTPUT
-
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  
   
     # 7. 生成boot.img
     - name: Build Boot img
@@ -162,6 +155,13 @@ jobs:
         img2simg root.img $GITHUB_WORKSPACE/artifacts/rootfs.img
         echo "status=success" >>$GITHUB_OUTPUT
 
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  
+  
     # 9. 上传制品
     - name: Upload Artifacts
       if: steps.kernel.outputs.status == 'success' && !cancelled()
@@ -190,7 +190,8 @@ jobs:
       with:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-        files: artifacts/rootfs.img
+        files: | 
+          artifacts/rootfs.img
           artifacts/boot.img
 
     - name: Delete workflow runs
