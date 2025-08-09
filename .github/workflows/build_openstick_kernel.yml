@@ -115,9 +115,9 @@ jobs:
     - name: Build Boot img
       run: |
         sudo rm -f rootfs/root/*dbg*
-        sudo chroot rootfs /usr/bin/dpkg -i /root/*.deb
+        sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo rm -f rootfs/root/*.deb
-        sudo chroot rootfs /usr/sbin/dpkg-reconfigure openssh-server
+        sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo umount rootfs/proc
         sudo umount rootfs/dev/pts
         sudo umount rootfs/dev
