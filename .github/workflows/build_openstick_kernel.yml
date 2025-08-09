@@ -114,9 +114,9 @@ jobs:
     # 7. 生成boot.img
     - name: Build Boot img
       run: |
-        sudo chroot rootfs rm /root/*dbg*
+        sudo rm -f rootfs/root/*dbg*
         sudo chroot rootfs /usr/bin/dpkg -i /root/*.deb
-        sudo chroot rootfs rm /root/*.deb
+        sudo rm -f rootfs/root/*.deb
         sudo chroot rootfs /usr/sbin/dpkg-reconfigure openssh-server
         sudo umount rootfs/proc
         sudo umount rootfs/dev/pts
