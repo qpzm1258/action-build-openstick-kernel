@@ -91,6 +91,16 @@ jobs:
         sudo dd if=/dev/zero of=root.img bs=1M count=1536
         sudo mkfs.btrfs --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
         mkdir -p rootfs
+
+    - name: SSH connection to Actions
+      uses: P3TERX/ssh2actions@v1.0.0
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      env:
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}   
+
+    - name: Mount Rootfs
+      run: |
         sudo mount -o compress=zstd,defaults,noatime,space_cache=v2,nodatacow root.img rootfs/
         sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/debian13.tar.gz -C rootfs
         sudo mount --bind /proc rootfs/proc 
@@ -106,13 +116,6 @@ jobs:
         sudo umount rootfs/dev
         sudo umount rootfs/sys
     
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}   
-
     # 5. 上传制品
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
