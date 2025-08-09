@@ -5,8 +5,12 @@ on:
     inputs:
       debian_version:
         description: 'debian version (support 12 or 13)'
-        required: true
-        default: '13'
+        type: choice
+        default: trixie
+        options:
+          - bookworm
+          - trixie
+          - bullseye
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
