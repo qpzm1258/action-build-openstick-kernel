@@ -85,7 +85,8 @@ jobs:
         esac
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
         if [ ! -z "${{ inputs.localversion }}" ]; then
-        sed -i 's/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/' .config
+          sed -i "s/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/" .config
+        fi
         make kernelversion
 
     - name: SSH connection to Actions
