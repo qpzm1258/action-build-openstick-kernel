@@ -124,7 +124,7 @@ jobs:
       if: steps.kernel.outputs.status == 'success' && !cancelled()
       run: |
         sudo dd if=/dev/zero of=root.img bs=1M count=1536
-        sudo mkfs.btrfs --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
+        sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
         mkdir -p rootfs 
         sudo mount -o compress=zstd,defaults,noatime,space_cache=v2,nodatacow root.img rootfs/
         sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/${{ inputs.debian_version }}.tar.gz -C rootfs
