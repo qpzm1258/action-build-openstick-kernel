@@ -26,7 +26,10 @@ on:
         description: 'Upload firmware to release'
         required: false
         default: 'false'
-
+      localversion:
+        description: 'Set your localversion(e.g. -openstick)'
+        required: false
+        default: '-openstick'
 
 jobs:
   build_kernel:
@@ -68,6 +71,7 @@ jobs:
 
     # 3. 内核配置
     - name: Configure Kernel
+      id: configure
       run: |
         cd linux-src
         case "${{ inputs.config_profile }}" in
@@ -80,6 +84,9 @@ jobs:
             ;;
         esac
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
+        if [ ! -z "${{ inputs.localversion }}" ]; then
+        sed -i 's/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/' .config
+        make kernelversion
 
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
