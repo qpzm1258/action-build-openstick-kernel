@@ -128,7 +128,7 @@ jobs:
         mkdir -p rootfs 
         mkdir -p img
         sudo mount -o compress=zstd,defaults,noatime,space_cache=v2,nodatacow root.img img/
-        sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/${{ inputs.debian_version }}.tar.gz -C rootfs
+        sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/bookworm.tar.gz -C rootfs
         sudo mount --bind /proc rootfs/proc 
         sudo mount --bind /dev rootfs/dev 
         sudo mount --bind /dev/pts rootfs/dev/pts 
@@ -149,7 +149,18 @@ jobs:
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
         sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
-        sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y && apt autoclean && rm -f /etc/resolv.conf"
+        sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y && apt autoclean"
+        if [ "${{ inputs.debian_version }}" = "trixie" ]; then
+          sudo tee rootfs/etc/apt/sources.list > /dev/null <<'EOF'
+          deb http://deb.debian.org/debian trixie main contrib non-free-firmware
+          deb http://deb.debian.org/debian-security trixie-security main contrib non-free-firmware
+          deb http://deb.debian.org/debian trixie-updates main contrib non-free-firmware
+          EOF
+          sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list.d/mobian.list
+          echo "⬆️ 升级到 Debian 13 (Trixie)..."
+          sudo chroot rootfs /bin/bash -c "apt update && apt full-upgrade -y && apt autoremove -y && apt clean"
+        fi
+        sudo chroot rootfs /bin/bash -c rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
         INITRD=$(sudo ls -t rootfs/boot/initrd.img-* 2>/dev/null | head -n1 || true)
