@@ -151,6 +151,7 @@ jobs:
         sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
         sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
+        sudo chroot rootfs /bin/bash -c "apt upgrade -y qrtr zram-tools"
         if [ "${{ inputs.debian_version }}" = "trixie" ]; then
           sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list
           sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list.d/mobian.list
