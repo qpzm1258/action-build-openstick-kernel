@@ -152,11 +152,7 @@ jobs:
         sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
         sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y && apt autoclean"
         if [ "${{ inputs.debian_version }}" = "trixie" ]; then
-          sudo tee rootfs/etc/apt/sources.list > /dev/null <<'EOF'
-          deb http://deb.debian.org/debian trixie main contrib non-free-firmware
-          deb http://deb.debian.org/debian-security trixie-security main contrib non-free-firmware
-          deb http://deb.debian.org/debian trixie-updates main contrib non-free-firmware
-          EOF
+          sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list
           sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list.d/mobian.list
           echo "⬆️ 升级到 Debian 13 (Trixie)..."
           sudo chroot rootfs /bin/bash -c "apt update && apt full-upgrade -y && apt autoremove -y && apt clean"
