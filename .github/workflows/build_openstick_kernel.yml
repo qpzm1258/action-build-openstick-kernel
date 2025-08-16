@@ -59,6 +59,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         lfs: true
+        submodules: recursive
         path: workspace
 
     # 2-2. 获取内核源码
