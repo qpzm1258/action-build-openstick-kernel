@@ -130,9 +130,6 @@ jobs:
         mkdir -p img
         sudo mount -o compress=zstd,defaults,noatime,space_cache=v2 root.img img/
         sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/rootfs.tar.gz -C rootfs
-        sudo chattr +C rootfs/var/cache
-        sudo chattr +C rootfs/var/tmp
-        sudo chattr +C rootfs/var/log/journal
         sudo mount --bind /proc rootfs/proc 
         sudo mount --bind /dev rootfs/dev 
         sudo mount --bind /dev/pts rootfs/dev/pts 
@@ -193,6 +190,9 @@ jobs:
         sudo umount rootfs/dev
         sudo umount rootfs/sys
         sudo rsync -axv rootfs/* img
+        sudo chattr +C img/var/cache
+        sudo chattr +C img/var/tmp
+        sudo chattr +C img/var/log/journal
         sudo umount img
         img2simg root.img $GITHUB_WORKSPACE/rootfs.img
         echo "status=success" >>$GITHUB_OUTPUT
