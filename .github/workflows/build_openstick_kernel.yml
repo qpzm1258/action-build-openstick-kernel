@@ -130,7 +130,7 @@ jobs:
         mkdir -p img
         sudo mount -o compress=zstd,defaults,noatime,space_cache=v2 root.img img/
         sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/rootfs.tar.gz -C rootfs
-        sudoc hattr +C rootfs/var/cache
+        sudo chattr +C rootfs/var/cache
         sudo chattr +C rootfs/var/tmp
         sudo chattr +C rootfs/var/log/journal
         sudo mount --bind /proc rootfs/proc 
