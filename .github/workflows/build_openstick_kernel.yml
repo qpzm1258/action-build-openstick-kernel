@@ -128,8 +128,11 @@ jobs:
         sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
         mkdir -p rootfs 
         mkdir -p img
-        sudo mount -o compress=zstd,defaults,noatime,space_cache=v2,nodatacow root.img img/
+        sudo mount -o compress=zstd,defaults,noatime,space_cache=v2 root.img img/
         sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/rootfs.tar.gz -C rootfs
+        sudoc hattr +C rootfs/var/cache
+        sudo chattr +C rootfs/var/tmp
+        sudo chattr +C rootfs/var/log/journal
         sudo mount --bind /proc rootfs/proc 
         sudo mount --bind /dev rootfs/dev 
         sudo mount --bind /dev/pts rootfs/dev/pts 
@@ -155,9 +158,9 @@ jobs:
           sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list
           sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list.d/mobian.list
           echo "⬆️ 升级到 Debian 13 (Trixie)..."
-          sudo chroot rootfs /bin/bash -c "apt update && apt full-upgrade -y && apt autoremove -y && apt clean"
+          sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y && apt clean"
         fi
-        sudo chroot rootfs /bin/bash -c rm -f /etc/resolv.conf"
+        sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
         INITRD=$(sudo ls -t rootfs/boot/initrd.img-* 2>/dev/null | head -n1 || true)
@@ -176,7 +179,7 @@ jobs:
           --pagesize 2048 \
           --second_offset 0x00f00000 \
           --ramdisk $INITRD \
-          --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,commit=10,noatime,discard=async,autodefrag,nodatacow,noatime,space_cache=v2 console=ttyMSM0,115200 no_framebuffer=true rw" \
+          --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,commit=10,noatime,discard=async,autodefrag,noatime,space_cache=v2 console=ttyMSM0,115200 no_framebuffer=true rw" \
           --kernel $GITHUB_WORKSPACE/artifacts/kernel-dtb \
           -o $GITHUB_WORKSPACE/boot.img
         echo "status=success" >>$GITHUB_OUTPUT
