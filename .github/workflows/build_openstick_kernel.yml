@@ -128,7 +128,7 @@ jobs:
         sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
         mkdir -p rootfs 
         mkdir -p img
-        sudo mount -o compress=zstd,defaults,noatime,clear_cache root.img img/
+        sudo mount -o compress=zstd,defaults,noatime,clear_cache,nodatacow root.img img/
         sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/rootfs.tar.gz -C rootfs
         sudo mount --bind /proc rootfs/proc 
         sudo mount --bind /dev rootfs/dev 
@@ -194,7 +194,6 @@ jobs:
         sudo umount rootfs/dev
         sudo umount rootfs/sys
         sudo rsync -axv rootfs/* img
-        sudo btrfs filesystem sync img/
         sudo chattr +C img/var/cache
         sudo chattr +C img/var/tmp
         sudo chattr +C img/var/log/journal
