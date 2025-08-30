@@ -134,9 +134,6 @@ jobs:
         sudo mount --bind /dev rootfs/dev 
         sudo mount --bind /dev/pts rootfs/dev/pts 
         sudo mount --bind /sys rootfs/sys
-        sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
-        sudo cp $GITHUB_WORKSPACE/workspace/files/*.rules rootfs/etc/udev/rules.d/
-        sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
         echo "status=success" >>$GITHUB_OUTPUT
   
     # 7. 生成boot.img
@@ -144,22 +141,54 @@ jobs:
       id: bootimg
       if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
+        sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
+        sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
+        sudo chroot rootfs /bin/bash -c "apt upgrade -y qrtr zram-tools"
+        if [ "${{ inputs.debian_version }}" = "trixie" ]; then
+          sudo cp rootfs/usr/lib/firmware ./
+          sudo umount rootfs/proc
+          sudo umount rootfs/dev/pts
+          sudo umount rootfs/dev
+          sudo umount rootfs/sys
+          sudo rm -rf rootfs/*
+          sudo apt update
+          sudo apt install -y debootstrap qemu-user-static binfmt-support
+          if [[ -f "$PKG_LIST_FILE" ]]; then
+            PKGS=$(grep -vE '^\s*#' "$PKG_LIST_FILE" | tr '\n' ',' | sed 's/,$//')
+            echo "📦 将安装的额外包: $PKGS"
+          else
+            echo "⚠️ 未找到 $PKG_LIST_FILE，跳过 --include"
+            PKGS=""
+          fi
+          if [[ -n "$PKGS" ]]; then
+            sudo debootstrap --foreign --arch=arm64 --include="$PKGS" trixie rootfs http://deb.debian.org/debian
+          else
+            sudo debootstrap --foreign --arch=arm64 trixie rootfs http://deb.debian.org/debian
+          fi
+          sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
+          sudo chroot "$ROOTFS_DIR" /debootstrap/debootstrap --second-stage
+          sudo rm rootfs/usr/bin/qemu-aarch64-static
+          sudo cp -r -n firmware/* rootfs/usr/lib/firmware/
+          sudo mount --bind /proc rootfs/proc 
+          sudo mount --bind /dev rootfs/dev 
+          sudo mount --bind /dev/pts rootfs/dev/pts 
+          sudo mount --bind /sys rootfs/sys
+          sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
+          sudo chroot rootfs /bin/bash -c "echo openstick > /etc/hostname"
+          sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware' > /etc/apt/sources.list"
+          sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian trixie-updates main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
+          sudo chroot rootfs /bin/bash -c "echo 'deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
+          sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
+          sudo cp $GITHUB_WORKSPACE/workspace/deb/*.deb rootfs/root/
+        fi
+        sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
+        sudo cp $GITHUB_WORKSPACE/workspace/files/*.rules rootfs/etc/udev/rules.d/
+        sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
         sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
-        sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
-        sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
-        sudo chroot rootfs /bin/bash -c "apt upgrade -y qrtr zram-tools"
-        if [ "${{ inputs.debian_version }}" = "trixie" ]; then
-          sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list
-          sudo sed -i 's/bookworm/trixie/g' rootfs/etc/apt/sources.list.d/mobian.list
-          echo "⬆️ 升级到 Debian 13 (Trixie)..."
-          sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
-          sudo chroot rootfs /bin/bash -c "apt install -y hostapd"
-          sudo chroot rootfs /bin/bash -c "apt autoremove -y"
-        fi
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
