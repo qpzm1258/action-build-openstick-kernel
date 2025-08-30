@@ -145,7 +145,7 @@ jobs:
         sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
         sudo chroot rootfs /bin/bash -c "apt upgrade -y qrtr zram-tools"
         if [ "${{ inputs.debian_version }}" = "trixie" ]; then
-          sudo cp rootfs/usr/lib/firmware ./
+          sudo cp -r rootfs/usr/lib/firmware ./
           sudo umount rootfs/proc
           sudo umount rootfs/dev/pts
           sudo umount rootfs/dev
@@ -167,6 +167,10 @@ jobs:
           fi
           sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
           sudo chroot "$ROOTFS_DIR" /debootstrap/debootstrap --second-stage
+          echo "root:1" | sudo chroot rootfs chpasswd
+          sudo chroot rootfs useradd -m -s /bin/bash klipper
+          echo "klipper:1" | sudo chroot rootfs chpasswd
+          sudo chroot rootfs usermod -aG sudo klipper
           sudo rm rootfs/usr/bin/qemu-aarch64-static
           sudo cp -r -n firmware/* rootfs/usr/lib/firmware/
           sudo mount --bind /proc rootfs/proc 
