@@ -129,11 +129,6 @@ jobs:
         mkdir -p rootfs 
         mkdir -p img
         sudo mount -t btrfs root.img img/
-        sudo tar --numeric-owner -xvpzf $GITHUB_WORKSPACE/workspace/rootfs/rootfs.tar.gz -C rootfs
-        sudo mount --bind /proc rootfs/proc 
-        sudo mount --bind /dev rootfs/dev 
-        sudo mount --bind /dev/pts rootfs/dev/pts 
-        sudo mount --bind /sys rootfs/sys
         echo "status=success" >>$GITHUB_OUTPUT
   
     # 7. 生成boot.img
@@ -141,52 +136,41 @@ jobs:
       id: bootimg
       if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
-        sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
-        sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
-        sudo chroot rootfs /bin/bash -c "apt upgrade -y qrtr zram-tools"
-        if [ "${{ inputs.debian_version }}" = "trixie" ]; then
-          sudo cp -r rootfs/usr/lib/firmware ./
-          sudo umount rootfs/proc
-          sudo umount rootfs/dev/pts
-          sudo umount rootfs/dev
-          sudo umount rootfs/sys
-          sudo rm -rf rootfs/*
-          sudo apt update
-          sudo apt install -y debootstrap qemu-user-static binfmt-support
-          if [[ -f $GITHUB_WORKSPACE/workspace/packages.txt ]]; then
-            PKGS=$(grep -vE '^\s*#' $GITHUB_WORKSPACE/workspace/packages.txt | tr '\n' ',' | sed 's/,$//')
-            echo "📦 将安装的额外包: $PKGS"
-          else
-            echo "⚠️ 未找到 $PKG_LIST_FILE，跳过 --include"
-            PKGS=""
-          fi
-          if [[ -n "$PKGS" ]]; then
-            sudo debootstrap --foreign --arch=arm64 --include="$PKGS" trixie rootfs http://deb.debian.org/debian
-          else
-            sudo debootstrap --foreign --arch=arm64 trixie rootfs http://deb.debian.org/debian
-          fi
-          sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
-          sudo chroot rootfs /debootstrap/debootstrap --second-stage
-          echo "root:1" | sudo chroot rootfs chpasswd
-          sudo chroot rootfs useradd -m -s /bin/bash klipper
-          echo "klipper:1" | sudo chroot rootfs chpasswd
-          sudo chroot rootfs usermod -aG sudo klipper
-          sudo rm rootfs/usr/bin/qemu-aarch64-static
-          sudo cp -r -n firmware/* rootfs/usr/lib/firmware/
-          sudo mount --bind /proc rootfs/proc 
-          sudo mount --bind /dev rootfs/dev 
-          sudo mount --bind /dev/pts rootfs/dev/pts 
-          sudo mount --bind /sys rootfs/sys
-          sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
-          sudo chroot rootfs /bin/bash -c "echo openstick > /etc/hostname"
-          sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware' > /etc/apt/sources.list"
-          sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian trixie-updates main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
-          sudo chroot rootfs /bin/bash -c "echo 'deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
-          sudo chroot rootfs /bin/bash -c "echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8"
-          sudo chroot rootfs /bin/bash -c "echo 'export TERM=xterm-256color' >> /etc/profile"
-          sudo chroot rootfs /bin/bash -c "sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config"
-          sudo cp $GITHUB_WORKSPACE/workspace/deb/*.deb rootfs/root/
+        sudo apt update
+        sudo apt install -y debootstrap qemu-user-static binfmt-support
+        if [[ -f $GITHUB_WORKSPACE/workspace/packages.txt ]]; then
+          PKGS=$(grep -vE '^\s*#' $GITHUB_WORKSPACE/workspace/packages.txt | tr '\n' ',' | sed 's/,$//')
+          echo "📦 将安装的额外包: $PKGS"
+        else
+          echo "⚠️ 未找到 $PKG_LIST_FILE，跳过 --include"
+          PKGS=""
         fi
+        if [[ -n "$PKGS" ]]; then
+          sudo debootstrap --foreign --arch=arm64 --include="$PKGS" ${{ inputs.debian_version }} rootfs http://deb.debian.org/debian
+        else
+          sudo debootstrap --foreign --arch=arm64 ${{ inputs.debian_version }} rootfs http://deb.debian.org/debian
+        fi
+        sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
+        sudo chroot rootfs /debootstrap/debootstrap --second-stage
+        echo "root:1" | sudo chroot rootfs chpasswd
+        sudo chroot rootfs useradd -m -s /bin/bash klipper
+        echo "klipper:1" | sudo chroot rootfs chpasswd
+        sudo chroot rootfs usermod -aG sudo klipper
+        sudo rm rootfs/usr/bin/qemu-aarch64-static
+        sudo cp -r -n $GITHUB_WORKSPACE/workspace/firmware/* rootfs/usr/lib/firmware/
+        sudo mount --bind /proc rootfs/proc 
+        sudo mount --bind /dev rootfs/dev 
+        sudo mount --bind /dev/pts rootfs/dev/pts 
+        sudo mount --bind /sys rootfs/sys
+        sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
+        sudo chroot rootfs /bin/bash -c "echo openstick > /etc/hostname"
+        sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian ${{ inputs.debian_version }} main contrib non-free non-free-firmware' > /etc/apt/sources.list"
+        sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian ${{ inputs.debian_version }}-updates main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
+        sudo chroot rootfs /bin/bash -c "echo 'deb http://security.debian.org/debian-security ${{ inputs.debian_version }}-security main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
+        sudo chroot rootfs /bin/bash -c "echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8"
+        sudo chroot rootfs /bin/bash -c "echo 'export TERM=xterm-256color' >> /etc/profile"
+        sudo chroot rootfs /bin/bash -c "sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config"
+        sudo cp $GITHUB_WORKSPACE/workspace/deb/*.deb rootfs/root/
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.rules rootfs/etc/udev/rules.d/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
