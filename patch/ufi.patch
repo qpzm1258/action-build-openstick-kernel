@@ -1,17 +1,16 @@
 diff --git a/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
-index b1a7eafbe..271d07b5a 100644
+index b1a7eafbe..c07e3c245 100644
 --- a/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
 +++ b/arch/arm64/boot/dts/qcom/msm8916-pm8916.dtsi
-@@ -145,7 +145,8 @@ pm8916_l12: l12 {
+@@ -46,7 +46,7 @@ &sdhc_2 {
  
- 		pm8916_l13: l13 {
- 			regulator-min-microvolt = <3075000>;
--			regulator-max-microvolt = <3075000>;
-+			regulator-max-microvolt = <3075000>;
-+			regulator-allow-set-load;
- 		};
+ &usb_hs_phy {
+ 	v1p8-supply = <&pm8916_l7>;
+-	v3p3-supply = <&pm8916_l13>;
++	v3p3-supply = <&pm8916_l9>;
+ };
  
- 		l14 {};
+ &wcnss {
 diff --git a/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi b/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
 index c77ed04bb..6f7adf608 100644
 --- a/arch/arm64/boot/dts/qcom/msm8916-ufi.dtsi
