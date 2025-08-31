@@ -183,6 +183,9 @@ jobs:
           sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian trixie-updates main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "echo 'deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "apt update && apt dist-upgrade -y --no-install-recommends -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' && apt autoclean"
+          sudo chroot rootfs /bin/bash -c "update-locale LANG=en.US.UTF-8"
+          sudo chroot rootfs /bin/bash -c "timedatectl set-timezone Asia/Shanghai"
+          sudo chroot rootfs /bin/bash -c "sed -i 'sudo sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config" 
           sudo cp $GITHUB_WORKSPACE/workspace/deb/*.deb rootfs/root/
         fi
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
@@ -226,10 +229,7 @@ jobs:
         sudo umount rootfs/dev/pts
         sudo umount rootfs/dev
         sudo umount rootfs/sys
-        sudo rsync -axv rootfs/* img
-        sudo chattr +C img/var/cache
-        sudo chattr +C img/var/tmp
-        sudo chattr +C img/var/log/journal
+        sudo cp -ar rootfs/* img
         sudo umount img
         img2simg root.img $GITHUB_WORKSPACE/rootfs.img
         echo "status=success" >>$GITHUB_OUTPUT
