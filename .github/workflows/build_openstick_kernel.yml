@@ -30,6 +30,14 @@ on:
         description: 'Set your localversion(e.g. -openstick)'
         required: false
         default: '-openstick'
+      rootfs_type:
+        description: 'Set rootfs type(e.g. ext4/btrfs)'
+        type: choice
+        default: btrfs
+        required: false
+        options:
+          - btrfs
+          - ext4
 
 jobs:
   build_debian:
@@ -125,10 +133,27 @@ jobs:
       if: steps.kernel.outputs.status == 'success' && !cancelled()
       run: |
         sudo dd if=/dev/zero of=root.img bs=1M count=1536
-        sudo mkfs.btrfs -O free-space-tree,no-holes --metadata dup --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
+        if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
+          sudo mkfs.btrfs \
+          -O free-space-tree,no-holes \
+          --metadata dup \
+          --data single \
+          --label "rootfs" \
+          -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e \
+          root.img
+        else
+          mkfs.ext4 \
+            -L rootfs \
+            -m 0 \          
+            -O ^has_journal \
+            -E lazy_itable_init=0,lazy_journal_init=0 \
+            -b 4096 \
+            -I 256 \
+            rootfs.img
+        fi
         mkdir -p rootfs 
         mkdir -p img
-        sudo mount -t btrfs root.img img/
+        sudo mount root.img img/
         echo "status=success" >>$GITHUB_OUTPUT
   
     # 7. 生成boot.img
@@ -193,6 +218,12 @@ jobs:
         fi
         echo "✅ 使用的 initrd: $INITRD"
         cp $INITRD $GITHUB_WORKSPACE/artifacts/
+        if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
+          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2 console=ttyMSM0,115200 no_framebuffer=true rw"
+        else
+          CMDLINE="earlycon root=LABEL=rootfs console=ttyMSM0,115200 no_framebuffer=true rw"
+        fi
+        echo "✅ 使用的 cmdline: $CMDLINE"
         mkbootimg \
           --base 0x80000000 \
           --kernel_offset 0x00080000 \
@@ -201,7 +232,7 @@ jobs:
           --pagesize 2048 \
           --second_offset 0x00f00000 \
           --ramdisk $INITRD \
-          --cmdline "earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2 console=ttyMSM0,115200 no_framebuffer=true rw" \
+          --cmdline $CMDLINE \
           --kernel $GITHUB_WORKSPACE/artifacts/kernel-dtb \
           -o $GITHUB_WORKSPACE/boot.img
         echo "status=success" >>$GITHUB_OUTPUT
@@ -234,7 +265,7 @@ jobs:
       id: tag
       if: steps.rootfs.outputs.status == 'success' && steps.bootimg.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "release_tag=debian-${{ inputs.debian_version }}-kernel-${{ inputs.kernel_version }}" >> $GITHUB_OUTPUT
+        echo "release_tag=debian-${{ inputs.debian_version }}-kernel-${{ inputs.kernel_version }}-${{ inputs.rootfs_type }}" >> $GITHUB_OUTPUT
         touch release.txt
         [ ${UPLOAD_GOFILE} = true && ${{ steps.gofile.outputs.url }} ] && echo "🔗 [GoFile](${{ steps.gofile.outputs.url }})" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
