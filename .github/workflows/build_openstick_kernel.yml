@@ -219,7 +219,7 @@ jobs:
           --pagesize 2048 \
           --second_offset 0x00f00000 \
           --ramdisk $INITRD \
-          --cmdline $CMDLINE \
+          --cmdline "$CMDLINE" \
           --kernel $GITHUB_WORKSPACE/artifacts/kernel-dtb \
           -o $GITHUB_WORKSPACE/boot.img
         echo "status=success" >>$GITHUB_OUTPUT
