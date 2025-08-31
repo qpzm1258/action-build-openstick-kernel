@@ -7,7 +7,7 @@ index b1a7eafbe..c07e3c245 100644
  &usb_hs_phy {
  	v1p8-supply = <&pm8916_l7>;
 -	v3p3-supply = <&pm8916_l13>;
-+	v3p3-supply = <&pm8916_l9>;
++
  };
  
  &wcnss {
