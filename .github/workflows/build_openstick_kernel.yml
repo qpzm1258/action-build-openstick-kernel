@@ -169,7 +169,7 @@ jobs:
         echo "klipper:1" | sudo chroot rootfs chpasswd
         sudo chroot rootfs usermod -aG sudo klipper
         sudo rm rootfs/usr/bin/qemu-aarch64-static
-        sudo cp -r -n $GITHUB_WORKSPACE/workspace/firmware/* rootfs/usr/lib/firmware/
+        sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/firmware/* rootfs/usr/lib/firmware/
         sudo mount --bind /proc rootfs/proc 
         sudo mount --bind /dev rootfs/dev 
         sudo mount --bind /dev/pts rootfs/dev/pts 
