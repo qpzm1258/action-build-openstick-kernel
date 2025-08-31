@@ -149,7 +149,7 @@ jobs:
             -E lazy_itable_init=0,lazy_journal_init=0 \
             -b 4096 \
             -I 256 \
-            rootfs.img
+            root.img
         fi
         mkdir -p rootfs 
         mkdir -p img
