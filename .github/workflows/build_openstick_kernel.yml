@@ -182,7 +182,7 @@ jobs:
           sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware' > /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian trixie-updates main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "echo 'deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
-          sudo chroot rootfs /bin/bash -c "echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen && locale-gen"
+          sudo chroot rootfs /bin/bash -c "echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen"
           sudo chroot rootfs /bin/bash -c "timedatectl set-timezone Asia/Shanghai"
           sudo chroot rootfs /bin/bash -c "echo 'export TERM=xterm-256color' >> /etc/profile"
           sudo chroot rootfs /bin/bash -c "sed -i 'sudo sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config" 
