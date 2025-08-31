@@ -191,6 +191,7 @@ jobs:
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.rules rootfs/etc/udev/rules.d/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
+        sudo cp $GITHUB_WORKSPACE/workspace/files/10-uname rootfs/etc/update-motd.d/
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
