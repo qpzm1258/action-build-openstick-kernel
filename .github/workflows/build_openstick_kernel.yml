@@ -233,6 +233,12 @@ jobs:
         sudo umount rootfs/dev
         sudo umount rootfs/sys
         sudo cp -ar rootfs/* img
+        if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
+          sudo chroot img /bin/bash -c "chattr +C /var/cache"
+          sudo chroot img /bin/bash -c "chattr +C /var/tmp"
+          sudo chroot img /bin/bash -c "chattr +C /var/log/journal"
+          sudo chroot img /bin/bash -c "chattr +C /var/log"
+        fi
         sudo umount img
         img2simg root.img $GITHUB_WORKSPACE/rootfs.img
         echo "status=success" >>$GITHUB_OUTPUT
