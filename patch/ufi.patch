@@ -7,7 +7,7 @@ index b1a7eafbe..271d07b5a 100644
  		pm8916_l13: l13 {
  			regulator-min-microvolt = <3075000>;
 -			regulator-max-microvolt = <3075000>;
-+			regulator-max-microvolt = <3300000>;
++			regulator-max-microvolt = <3075000>;
 +			regulator-allow-set-load;
  		};
  
