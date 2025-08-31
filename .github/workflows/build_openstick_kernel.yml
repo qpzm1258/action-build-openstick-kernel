@@ -134,22 +134,9 @@ jobs:
       run: |
         sudo dd if=/dev/zero of=root.img bs=1M count=1536
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
-          sudo mkfs.btrfs \
-          -O free-space-tree,no-holes \
-          --metadata dup \
-          --data single \
-          --label "rootfs" \
-          -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e \
-          root.img
+          sudo mkfs.btrfs -O free-space-tree,no-holes --metadata dup --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
         else
-          mkfs.ext4 \
-            -L rootfs \
-            -m 0 \          
-            -O ^has_journal \
-            -E lazy_itable_init=0,lazy_journal_init=0 \
-            -b 4096 \
-            -I 256 \
-            root.img
+          mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
         fi
         mkdir -p rootfs 
         mkdir -p img
