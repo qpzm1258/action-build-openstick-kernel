@@ -241,6 +241,7 @@ jobs:
           sudo chroot img /bin/bash -c "chattr +C /var/log/journal"
           sudo chroot img /bin/bash -c "chattr +C /var/log"
         fi
+        sudo sync
         sudo umount img
         img2simg root.img $GITHUB_WORKSPACE/rootfs.img
         echo "status=success" >>$GITHUB_OUTPUT
