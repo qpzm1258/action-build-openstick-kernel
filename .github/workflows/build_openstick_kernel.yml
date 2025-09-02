@@ -158,7 +158,8 @@ jobs:
           sudo mount -o compress=zstd,defaults,noatime,sync /dev/loop0 img/
         else
           sudo mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
-          sudo mount root.img img/
+          sudo losetup -fP root.img
+          sudo mount /dev/loop0 img/
         fi
         echo "status=success" >>$GITHUB_OUTPUT
   
