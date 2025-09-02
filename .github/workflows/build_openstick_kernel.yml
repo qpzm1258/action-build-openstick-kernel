@@ -57,7 +57,8 @@ jobs:
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-14 g++-14 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
-          android-sdk-libsparse-utils wget gcc-14-aarch64-linux-gnu
+          android-sdk-libsparse-utils wget gcc-14-aarch64-linux-gnu \
+          curl
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
           sudo dpkg -i mkbootimg_34.0.5-12_all.deb
       # 安装编译依赖项 [5,6](@ref)
@@ -89,11 +90,6 @@ jobs:
             ;;
           custom)
             cp $GITHUB_WORKSPACE/workspace/.config .  # 使用仓库中的自定义配置
-            MAJOR=$(grep "^VERSION =" Makefile | awk '{print $3}')
-            MINOR=$(grep "^PATCHLEVEL =" Makefile | awk '{print $3}')
-            if [ "$MAJOR" -gt 6 ] || { [ "$MAJOR" -eq 6 ] && [ "$MINOR" -gt 6 ]; }; then
-              echo "CONFIG_CFG80211_REQUIRE_SIGNED_REGDB=n" >> .config
-              fi
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
             ;;
         esac
@@ -103,6 +99,13 @@ jobs:
         fi
         KERNEL_VER=$(make kernelversion)
         echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
+        if [[ "$(make kernelrelease)" > "6.6" ]]; then
+          echo "✅ 内核版本 >= 6.7，需要内置 db.txt"
+          REGDB_URL="https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git/plain/db.txt"
+          echo "📥 正在下载 db.txt..."
+          curl -L "$REGDB_URL" -o net/wireless/db.txt
+          echo "✅ db.txt 已保存到 $TARGET_DIR"
+        fi
 
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
