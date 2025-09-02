@@ -89,6 +89,11 @@ jobs:
             ;;
           custom)
             cp $GITHUB_WORKSPACE/workspace/.config .  # 使用仓库中的自定义配置
+            MAJOR=$(grep "^VERSION =" Makefile | awk '{print $3}')
+            MINOR=$(grep "^PATCHLEVEL =" Makefile | awk '{print $3}')
+            if [ "$MAJOR" -gt 6 ] || { [ "$MAJOR" -eq 6 ] && [ "$MINOR" -gt 6 ]; }; then
+              echo "CONFIG_CFG80211_REQUIRE_SIGNED_REGDB=n" >> .config
+              fi
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
             ;;
         esac
@@ -139,7 +144,7 @@ jobs:
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
           sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
           sudo losetup -fP root.img
-          sudo mount -o sync /dev/loop0 img/
+          sudo mount -o compress=zstd,defaults,noatime,sync /dev/loop0 img/
         else
           sudo mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
           sudo mount root.img img/
