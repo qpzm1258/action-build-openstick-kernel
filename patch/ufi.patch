@@ -32,21 +32,3 @@ index c77ed04bb6c3..6f7adf6085df 100644
  			function = LED_FUNCTION_WAN;
  		};
  	};
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index cb85f77cdc93..448ae7fdb2ec 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -335,10 +335,10 @@ CLUSTER_PD: power-domain-cluster {
- 		};
- 	};
- 
--	rpm: remoteproc {
--		compatible = "qcom,msm8916-rpm-proc", "qcom,rpm-proc";
-+	smd {
-+		compatible = "qcom,smd";
- 
--		smd-edge {
-+		rpm {
- 			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
- 			mboxes = <&apcs 0>;
- 			qcom,smd-edge = <15>;
