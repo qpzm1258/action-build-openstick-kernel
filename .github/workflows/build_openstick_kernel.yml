@@ -211,7 +211,7 @@ jobs:
         echo "✅ 使用的 initrd: $INITRD"
         cp $INITRD $GITHUB_WORKSPACE/artifacts/
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
-          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2 console=ttyMSM0,115200 no_framebuffer=true rw"
+          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2,sync console=ttyMSM0,115200 no_framebuffer=true rw"
         else
           CMDLINE="earlycon root=LABEL=rootfs console=ttyMSM0,115200 no_framebuffer=true rw"
         fi
