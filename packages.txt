@@ -231,7 +231,6 @@ util-linux-extra
 vim
 vim-common
 vim-runtime
-wireless-regdb
 wireless-tools
 wpasupplicant
 xml-core
