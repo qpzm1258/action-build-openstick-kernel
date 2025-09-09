@@ -55,6 +55,7 @@ jobs:
     - name: Setup Build Environment
       run: |
         sudo apt-get update
+        sudo apt-get upgrade
         sudo apt-get install -y \
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-14 g++-14 dpkg-dev kmod cpio rsync u-boot-tools \
@@ -63,6 +64,8 @@ jobs:
           curl
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
           sudo dpkg -i mkbootimg_34.0.5-12_all.deb
+          wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.141_all.deb
+          sudo dpkg -i debootstrap_1.0.141_all.deb
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
@@ -156,8 +159,8 @@ jobs:
       id: bootimg
       if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
-        sudo apt update
-        sudo apt install -y qemu-user-static binfmt-support debootstrap gzip xz-utils
+        sudo apt-get update
+        sudo apt-get install -y qemu-user-static binfmt-support
         if [[ -f $GITHUB_WORKSPACE/workspace/packages.txt ]]; then
           PKGS=$(grep -vE '^\s*#' $GITHUB_WORKSPACE/workspace/packages.txt | tr '\n' ',' | sed 's/,$//')
           echo "📦 将安装的额外包: $PKGS"
