@@ -164,14 +164,14 @@ jobs:
           echo "⚠️ 未找到 $PKG_LIST_FILE，跳过 --include"
           PKGS=""
         fi
-        DEBURL = "http://deb.debian.org/debian"
+        DEBURL="http://deb.debian.org/debian"
         if [[ "${{ inputs.debian_version }}" == "noble" ]]; then
-          DEBURL = "http://archive.ubuntu.com/ubuntu"
+          DEBURL="http://archive.ubuntu.com/ubuntu"
         fi
         if [[ -n "$PKGS" ]]; then
-          sudo debootstrap --foreign --arch=arm64 --include="$PKGS" ${{ inputs.debian_version }} rootfs $DEBURL
+          sudo debootstrap --foreign --arch=arm64 --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
-          sudo debootstrap --foreign --arch=arm64 ${{ inputs.debian_version }} rootfs $DEBURL
+          sudo debootstrap --foreign --arch=arm64 ${{ inputs.debian_version }} rootfs "$DEBURL"
         fi
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
         sudo chroot rootfs /debootstrap/debootstrap --second-stage
