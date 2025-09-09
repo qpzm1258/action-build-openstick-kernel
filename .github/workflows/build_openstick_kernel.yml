@@ -122,6 +122,7 @@ jobs:
           CC=gcc-14 HOSTCC=gcc-14 \
           KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
           KBUILD_DEBARCH=arm64 \
+          -j$(nproc) \
           bindeb-pkg
         # DEB打包方法 [6](@ref)
         
