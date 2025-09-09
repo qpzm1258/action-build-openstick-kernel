@@ -115,7 +115,7 @@ jobs:
       run: |
         cd linux-src
         # 编译内核与模块
-        make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 -j$(nproc) all
+        # make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 -j$(nproc) all
         
         # 生成DEB安装包
         make ARCH=$ARCH \
