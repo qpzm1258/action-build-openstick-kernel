@@ -78,6 +78,7 @@ jobs:
         repository: msm8916-mainline/linux
         ref: ${{ inputs.kernel_version }}  # 使用输入的内核版本
         path: linux-src
+        fetch-depth: 0
 
     # 3. 内核配置
     - name: Configure Kernel
