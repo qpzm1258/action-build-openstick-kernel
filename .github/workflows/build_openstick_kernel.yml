@@ -156,12 +156,7 @@ jobs:
       if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
         sudo apt update
-        sudo apt install -y qemu-user-static binfmt-support git wget ca-certificates
-
-        git clone https://salsa.debian.org/installer-team/debootstrap.git
-        cd debootstrap
-        export DEBOOTSTRAP_DIR="$(pwd)"
-        cd ../
+        sudo apt install -y qemu-user-static binfmt-support debootstrap gzip xz-utils
         if [[ -f $GITHUB_WORKSPACE/workspace/packages.txt ]]; then
           PKGS=$(grep -vE '^\s*#' $GITHUB_WORKSPACE/workspace/packages.txt | tr '\n' ',' | sed 's/,$//')
           echo "📦 将安装的额外包: $PKGS"
@@ -174,9 +169,9 @@ jobs:
           DEBURL="http://archive.ubuntu.com/ubuntu"
         fi
         if [[ -n "$PKGS" ]]; then
-          sudo  --preserve-env=DEBOOTSTRAP_DIR "$DEBOOTSTRAP_DIR"/debootstrap --foreign --arch=arm64 --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo  --preserve-env=DEBOOTSTRAP_DIR "$DEBOOTSTRAP_DIR"/debootstrap --foreign --arch=arm64 --variant=minbase --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
-          sudo  --preserve-env=DEBOOTSTRAP_DIR "$DEBOOTSTRAP_DIR"/debootstrap --foreign --arch=arm64 ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo  --preserve-env=DEBOOTSTRAP_DIR "$DEBOOTSTRAP_DIR"/debootstrap --foreign --arch=arm64 --variant=minbase ${{ inputs.debian_version }} rootfs "$DEBURL"
         fi
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
         sudo chroot rootfs /debootstrap/debootstrap --second-stage
