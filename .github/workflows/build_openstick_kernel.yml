@@ -174,9 +174,9 @@ jobs:
           DEBURL="http://archive.ubuntu.com/ubuntu"
         fi
         if [[ -n "$PKGS" ]]; then
-          sudo  --preserve-env=DEBOOTSTRAP_DIR ./debootstrap --foreign --arch=arm64 --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo  --preserve-env=DEBOOTSTRAP_DIR "$DEBOOTSTRAP_DIR"/debootstrap --foreign --arch=arm64 --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
-          sudo  --preserve-env=DEBOOTSTRAP_DIR ./debootstrap --foreign --arch=arm64 ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo  --preserve-env=DEBOOTSTRAP_DIR "$DEBOOTSTRAP_DIR"/debootstrap --foreign --arch=arm64 ${{ inputs.debian_version }} rootfs "$DEBURL"
         fi
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
         sudo chroot rootfs /debootstrap/debootstrap --second-stage
