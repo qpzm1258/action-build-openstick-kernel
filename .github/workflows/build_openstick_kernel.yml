@@ -182,7 +182,7 @@ jobs:
         if [ "$OSTYPE" = "ubuntu" ]; then
           DEBURL="http://ports.ubuntu.com/ubuntu-ports"
           DEBSRC="main,universe,multiverse"
-          PKGS="$PKGS bsdextrautils"
+          PKGS="$PKGS bsdextrautils systemd-resolved"
         else
           PKGS="$PKGS bsdmainutils ifupdown isc-dhcp-client isc-dhcp-common netfilter-persistent rmtfs runit-helper util-linux-extra usrmerge"
         fi
