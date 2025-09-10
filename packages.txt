@@ -97,7 +97,6 @@ util-linux
 vim
 vim-common
 vim-runtime
-wireless-tools
 wpasupplicant
 xml-core
 xxd
