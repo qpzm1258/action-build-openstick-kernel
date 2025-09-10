@@ -168,11 +168,20 @@ jobs:
           echo "⚠️ 未找到 $PKG_LIST_FILE，跳过 --include"
           PKGS=""
         fi
+
+        ver="${{ inputs.debian_version }}"
+        if [ "$ver" = "trixie" ] || [ "$ver" = "bookworm" ]; then
+          OSTYPE=debian
+        elif [ "$ver" = "noble" ] || [ "$ver" = "plucky" ]; then
+          OSTYPE=ubuntu
+        fi
+        echo "OSTYPE=$OSTYPE" >> $GITHUB_ENV
+
         DEBURL="http://deb.debian.org/debian"
-        if [[ "${{ inputs.debian_version }}" == "noble" || "${{ inputs.debian_version }}" == "plucky" ]]; then
+        if [ "$OSTYPE" = "ubuntu" ]; then
           DEBURL="http://ports.ubuntu.com/ubuntu-ports"
         fi
-        echo $DEBURL
+        
         if [[ -n "$PKGS" ]]; then
           sudo debootstrap --foreign --arch=arm64 --variant=minbase --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
@@ -192,11 +201,11 @@ jobs:
         sudo mount --bind /sys rootfs/sys
         sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
         sudo chroot rootfs /bin/bash -c "echo openstick > /etc/hostname"
-        if [[ "${{ inputs.debian_version }}" == "trixie" || "${{ inputs.debian_version }}" == "bookworm" ]]; then
+        if [ "$OSTYPE" = "debian" ]; then
           sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian ${{ inputs.debian_version }} main contrib non-free non-free-firmware' > /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "echo 'deb http://deb.debian.org/debian ${{ inputs.debian_version }}-updates main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "echo 'deb http://security.debian.org/debian-security ${{ inputs.debian_version }}-security main contrib non-free non-free-firmware' >> /etc/apt/sources.list"
-        elif [[ "${{ inputs.debian_version }}" == "noble" ]]; then
+        elif [ "$OSTYPE" = "ubuntu" ]; then
           sudo chroot rootfs /bin/bash -c "echo 'deb http://archive.ubuntu.com/ubuntu ${{ inputs.debian_version }} main restricted universe multiverse' > /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "echo 'deb http://archive.ubuntu.com/ubuntu ${{ inputs.debian_version }}-updates main restricted universe multiverse' > /etc/apt/sources.list"
           sudo chroot rootfs /bin/bash -c "echo 'deb http://archive.ubuntu.com/ubuntu ${{ inputs.debian_version }}-security main restricted universe multiverse' > /etc/apt/sources.list"
