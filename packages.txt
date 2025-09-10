@@ -93,7 +93,6 @@ tzdata
 ucf
 udev
 usbutils
-usrmerge
 util-linux
 vim
 vim-common
