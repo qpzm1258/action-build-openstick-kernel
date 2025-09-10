@@ -12,6 +12,7 @@ on:
           - bookworm
           - trixie
           - noble
+          - plucky
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
@@ -168,20 +169,13 @@ jobs:
           PKGS=""
         fi
         DEBURL="http://deb.debian.org/debian"
-        if [[ "${{ inputs.debian_version }}" == "noble" ]]; then
-          DEBURL="http://archive.ubuntu.com/ubuntu"
-          sudo debootstrap --arch=arm64 ${{ inputs.debian_version }} ${{ inputs.debian_version }}.tar "$DEBURL"
-          if [[ -n "$PKGS" ]]; then
-            sudo debootstrap --foreign --arch=arm64 --variant=minbase --include="$PKGS" --unpack-tarball=${{ inputs.debian_version }}.tar rootfs
-          else
-            sudo debootstrap --foreign --arch=arm64 --variant=minbase --unpack-tarball=${{ inputs.debian_version }}.tar rootfs
-          fi
+        if [[ "${{ inputs.debian_version }}" == "noble" || "${{ inputs.debian_version }}" =="plucky"]]; then
+          DEBURL="http://ports.ubuntu.com/ubuntu-ports"
+        fi
+        if [[ -n "$PKGS" ]]; then
+          sudo debootstrap --foreign --arch=arm64 --variant=minbase --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
-          if [[ -n "$PKGS" ]]; then
-            sudo debootstrap --foreign --arch=arm64 --variant=minbase --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
-          else
-            sudo debootstrap --foreign --arch=arm64 --variant=minbase ${{ inputs.debian_version }} rootfs "$DEBURL"
-          fi
+          sudo debootstrap --foreign --arch=arm64 --variant=minbase ${{ inputs.debian_version }} rootfs "$DEBURL"
         fi
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
         sudo chroot rootfs /debootstrap/debootstrap --second-stage
@@ -287,7 +281,7 @@ jobs:
       id: tag
       if: steps.rootfs.outputs.status == 'success' && steps.bootimg.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "release_tag=debian-${{ inputs.debian_version }}-kernel-${{ steps.configure.outputs.kernel_ver }}-${{ inputs.rootfs_type }}" >> $GITHUB_OUTPUT
+        echo "release_tag=openstick-${{ inputs.debian_version }}-kernel-${{ steps.configure.outputs.kernel_ver }}-${{ inputs.rootfs_type }}" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload firmware to release
