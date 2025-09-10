@@ -182,10 +182,11 @@ jobs:
         if [ "$OSTYPE" = "ubuntu" ]; then
           DEBURL="http://ports.ubuntu.com/ubuntu-ports"
           DEBSRC="main,universe,multiverse"
+        else
+          PKGS="$PKGS bsdmainutils ifupdown isc-dhcp-client isc-dhcp-common netfilter-persistent rmtfs runit-helper util-linux-extra usrmerge"
         fi
         
         if [[ -n "$PKGS" ]]; then
-          PKGS="$PKGS bsdmainutils ifupdown isc-dhcp-client isc-dhcp-common netfilter-persistent rmtfs runit-helper util-linux-extra usrmerge"
           sudo debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
           sudo debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" ${{ inputs.debian_version }} rootfs "$DEBURL"
