@@ -182,6 +182,7 @@ jobs:
         if [ "$OSTYPE" = "ubuntu" ]; then
           DEBURL="http://ports.ubuntu.com/ubuntu-ports"
           DEBSRC="main,universe,multiverse"
+          PKGS="$PKGS bsdextrautils"
         else
           PKGS="$PKGS bsdmainutils ifupdown isc-dhcp-client isc-dhcp-common netfilter-persistent rmtfs runit-helper util-linux-extra usrmerge"
         fi
@@ -209,11 +210,11 @@ jobs:
         sudo chroot rootfs /bin/bash -c "cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime"
         sudo chroot rootfs /bin/bash -c "echo 'export TERM=xterm-256color' >> /etc/profile"
         sudo chroot rootfs /bin/bash -c "sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config"
-        sudo cp $GITHUB_WORKSPACE/workspace/deb/*.deb rootfs/root/
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.rules rootfs/etc/udev/rules.d/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
         sudo cp $GITHUB_WORKSPACE/workspace/files/10-uname rootfs/etc/update-motd.d/
+        sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/usr rootfs/
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
@@ -221,6 +222,8 @@ jobs:
         sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
+        sudo chroot rootfs /bin/bash -c "chmod +x /usr/bin/adbd /usr/bin/gc /usr/sbin/*.sh"
+        sudo chroot rootfs /bin/bash -c "systemctl daemon-reload && systemctl enable adbd openstick-button-monitor openstick-gc-startup openstick-startup-diagnose"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
         INITRD=$(sudo ls -t rootfs/boot/initrd.img-* 2>/dev/null | head -n1 || true)
