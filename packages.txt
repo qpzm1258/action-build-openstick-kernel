@@ -47,7 +47,6 @@ initramfs-tools
 initramfs-tools-core
 iproute2
 iptables
-iptables-persistent
 iputils-ping
 klibc-utils
 kmod
