@@ -178,14 +178,16 @@ jobs:
         echo "OSTYPE=$OSTYPE" >> $GITHUB_ENV
 
         DEBURL="http://deb.debian.org/debian"
+        DEBSRC="main,contrib,non-free,non-free-firmware"
         if [ "$OSTYPE" = "ubuntu" ]; then
           DEBURL="http://ports.ubuntu.com/ubuntu-ports"
+          DEBSRC="main,universe,multiverse"
         fi
         
         if [[ -n "$PKGS" ]]; then
-          sudo debootstrap --foreign --arch=arm64 --variant=minbase --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
-          sudo debootstrap --foreign --arch=arm64 --variant=minbase ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" ${{ inputs.debian_version }} rootfs "$DEBURL"
         fi
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
         sudo chroot rootfs /debootstrap/debootstrap --second-stage
