@@ -169,7 +169,7 @@ jobs:
           PKGS=""
         fi
         DEBURL="http://deb.debian.org/debian"
-        if [[ "${{ inputs.debian_version }}" == "noble" || "${{ inputs.debian_version }}" =="plucky"]]; then
+        if [[ "${{ inputs.debian_version }}" == "noble" || "${{ inputs.debian_version }}" == "plucky"]]; then
           DEBURL="http://ports.ubuntu.com/ubuntu-ports"
         fi
         if [[ -n "$PKGS" ]]; then
