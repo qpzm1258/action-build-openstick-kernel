@@ -219,11 +219,17 @@ jobs:
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
+        if [ "$OSTYPE" = "debian" ]; then
+          sudo wget -O rootfs/etc/apt/trusted.gpg.d/mobian.gpg https://repo.mobian-project.org/mobian.gpg
+          sudo chroot rootfs /bin/bash -c "echo 'deb http://repo.mobian-project.org/ ${{ inputs.debian_version }} main non-free-firmware' > /etc/apt/sources.list.d/mobian.list"
+          sudo chroot rootfs /bin/bash -c "apt-get update && apt-get install -qqy --no-install-recommends modemmanager qrtr-tools systemd-timesyncd mobile-broadband-provider-info mobian-tweaks-common"
+        fi
         sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/bin/adbd /usr/bin/gc /usr/sbin/*.sh"
         sudo chroot rootfs /bin/bash -c "systemctl daemon-reload && systemctl enable adbd openstick-button-monitor openstick-gc-startup openstick-startup-diagnose"
+        sudo chroot rootfs /bin/bash -c "find /var/log -type f -delete"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
         INITRD=$(sudo ls -t rootfs/boot/initrd.img-* 2>/dev/null | head -n1 || true)
