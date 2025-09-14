@@ -216,6 +216,9 @@ jobs:
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
         sudo cp $GITHUB_WORKSPACE/workspace/files/10-uname rootfs/etc/update-motd.d/
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/usr rootfs/
+        if [ "$ver" = "trixie" ]; then
+          sudo wget -O rootfs/root/wpasupplicant_2.10-12+deb12u3_arm64.deb http://ftp.us.debian.org/debian/pool/main/w/wpa/wpasupplicant_2.10-12+deb12u3_arm64.deb
+        fi
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
