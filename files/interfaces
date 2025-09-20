@@ -4,17 +4,3 @@ source /etc/network/interfaces.d/*
 
 auto lo
 iface lo inet loopback
-
-iface usb0 inet manual
-
-auto br0
-iface br0 inet static
-        address 192.168.68.1/24
-        bridge-ports usb0
-        bridge-stp off
-        bridge_maxwait 0
-
-
-iface br0 inet6 static
-        address dead:beef::1/64
-

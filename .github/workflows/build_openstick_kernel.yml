@@ -188,7 +188,11 @@ jobs:
         else
           PKGS="$PKGS bsdmainutils ifupdown isc-dhcp-client isc-dhcp-common netfilter-persistent rmtfs runit-helper util-linux-extra usrmerge"
         fi
-        
+        if [ "$ver" = "trixie" ]; then
+          PKGS="$PKGS iwd network-manager-iwd"
+        else
+          PKGS="$PKGS wpasupplicant"
+        fi
         if [[ -n "$PKGS" ]]; then
           sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
@@ -229,9 +233,6 @@ jobs:
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
         sudo cp $GITHUB_WORKSPACE/workspace/files/10-uname rootfs/etc/update-motd.d/
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/usr rootfs/
-        if [ "$ver" = "trixie" ]; then
-          sudo wget -O rootfs/root/wpasupplicant_2.10-12+deb12u3_arm64.deb http://ftp.us.debian.org/debian/pool/main/w/wpa/wpasupplicant_2.10-12+deb12u3_arm64.deb
-        fi
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
@@ -244,12 +245,14 @@ jobs:
         if [ "$ver" = "trixie" ]; then
           sudo rm -f rootfs/etc/profile.d/mobile-tweaks-mali.sh
           sudo chroot rootfs /bin/bash -c "apt-mark hold mobile-tweaks-common"
+          sudo chroot rootfs /bin/bash -c "echo '[device]' >> /etc/NetworkManager/NetworkManager.conf"
+          sudo chroot rootfs /bin/bash -c "echo 'wifi.backend=iwd' >> /etc/NetworkManager/NetworkManager.conf"
         fi
         # sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/bin/adbd /usr/bin/gc /usr/sbin/*.sh"
-        sudo chroot rootfs /bin/bash -c "systemctl daemon-reload && systemctl enable openstick-button-monitor openstick-gc-startup openstick-startup-diagnose.timer"
+        sudo chroot rootfs /bin/bash -c "systemctl daemon-reload && systemctl enable openstick-button-monitor openstick-gc-startup openstick-startup-diagnose.timer iwd"
         sudo chroot rootfs /bin/bash -c "find /var/log -type f -delete"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         export PYTHONPATH=/usr/share/android-tools/mkbootimg

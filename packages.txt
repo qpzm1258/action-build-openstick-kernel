@@ -96,7 +96,6 @@ util-linux
 vim
 vim-common
 vim-runtime
-wpasupplicant
 xml-core
 xxd
 zlib1g
