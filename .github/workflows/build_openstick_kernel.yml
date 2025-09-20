@@ -240,7 +240,7 @@ jobs:
           sudo chroot rootfs /bin/bash -c "echo 'deb http://repo.mobian-project.org/ ${{ inputs.debian_version }} main non-free-firmware' > /etc/apt/sources.list.d/mobian.list"
           sudo chroot rootfs /bin/bash -c "apt-get update && apt-get install -qqy --no-install-recommends modemmanager qrtr-tools systemd-timesyncd mobile-broadband-provider-info mobian-tweaks-common"
         fi
-        sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
+        # sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/bin/adbd /usr/bin/gc /usr/sbin/*.sh"
