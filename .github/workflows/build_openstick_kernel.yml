@@ -94,8 +94,8 @@ jobs:
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
             ;;
           custom)
-            # make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
-            cp $GITHUB_WORKSPACE/workspace/.config . # 使用仓库中的自定义配置
+            make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
+            scripts/kconfig/merge_config.sh -m -Q .config  $GITHUB_WORKSPACE/workspace/.config # 使用仓库中的自定义配置
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
             ;;
         esac
@@ -242,7 +242,7 @@ jobs:
         fi
         if [ "$ver" = "trixie" ]; then
           sudo rm -f rootfs/etc/profile.d/mobile-tweaks-mali.sh
-          sudo chroot rootfs /bin/bash -c "apt-mark hold mobile-tweaks-common wpasupplicant"
+          sudo chroot rootfs /bin/bash -c "apt-mark hold mobile-tweaks-common"
         fi
         # sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
