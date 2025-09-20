@@ -53,20 +53,9 @@ jobs:
 
     steps:
     # 1. 环境初始化
-    - name: Free disk space
-      uses: jlumbroso/free-disk-space@main
-      with:
-        tool-cache: true       # 清理工具缓存（可释放 ~6GB）
-        android: true          # 删除 Android SDK
-        dotnet: true           # 删除 .NET SDK
-        haskell: true          # 删除 Haskell
-        large-packages: true   # 删除大包（如 google-chrome, firefox）
-        docker-images: true    # 删除预装的 Docker 镜像
-
     - name: Setup Build Environment
       run: |
         sudo apt-get update
-        sudo apt-get dist-upgrade -y
         sudo apt-get install -y \
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-14 g++-14 dpkg-dev kmod cpio rsync u-boot-tools \
