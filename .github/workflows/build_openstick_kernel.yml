@@ -61,7 +61,7 @@ jobs:
           gcc-14 g++-14 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-14-aarch64-linux-gnu \
-          curl
+          curl libdw-dev
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
           sudo dpkg -i mkbootimg_34.0.5-12_all.deb
           wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.141_all.deb
