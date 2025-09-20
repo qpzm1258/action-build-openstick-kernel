@@ -204,7 +204,7 @@ jobs:
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/firmware rootfs/usr/lib/
         sudo chmod -R 644 rootfs/usr/lib/firmware
         sudo cp -a --update=none $GITHUB_WORKSPACE/workspace/files/system/* rootfs/etc/systemd/
-        # sudo cp -a $GITHUB_WORKSPACE/workspace/files/dhcp.conf rootfs/etc/dnsmasq.d/dhcp.conf
+        sudo cp -a $GITHUB_WORKSPACE/workspace/files/dhcp.conf rootfs/etc/dnsmasq.d/dhcp.conf
         # sudo cp -a $GITHUB_WORKSPACE/workspace/files/rc.local rootfs/etc/rc.local
         # sudo chmod +x rootfs/etc/rc.local
         sudo cp -a $GITHUB_WORKSPACE/workspace/files/msm8916-usb-gadget.sh rootfs/usr/sbin/
