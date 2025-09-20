@@ -103,3 +103,4 @@ zlib1g
 zram-tools
 zstd
 iw
+hostapd
