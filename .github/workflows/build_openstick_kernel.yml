@@ -159,7 +159,7 @@ jobs:
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
           sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
           sudo losetup -fP root.img
-          sudo mount -o compress=zstd,defaults,noatime,sync /dev/loop0 img/
+          sudo mount -t btrfs -o compress=zstd,defaults,noatime,sync /dev/loop0 img/
         else
           sudo mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
           sudo losetup -fP root.img
