@@ -94,10 +94,12 @@ jobs:
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
             ;;
           custom)
-            cp $GITHUB_WORKSPACE/workspace/.config .  # 使用仓库中的自定义配置
+            make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
+            cat $GITHUB_WORKSPACE/workspace/.config >> .config  # 使用仓库中的自定义配置
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
             ;;
         esac
+        make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 savedefconfig
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
         if [ ! -z "${{ inputs.localversion }}" ]; then
           sed -i "s/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/" .config
@@ -293,6 +295,7 @@ jobs:
           artifacts/*
           linux-src/arch/arm64/boot/Image
           linux-src/arch/arm64/boot/dts/qcom/msm8916-thwc-ufi001c.dtb
+          linux-src/defconfig
 
     - name: Generate release tag
       id: tag
