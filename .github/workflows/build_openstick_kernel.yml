@@ -203,6 +203,16 @@ jobs:
         sudo rm rootfs/usr/bin/qemu-aarch64-static
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/firmware rootfs/usr/lib/
         sudo chmod -R 644 rootfs/usr/lib/firmware
+        sudo cp -a --update=none $GITHUB_WORKSPACE/workspace/files/system/* rootfs/etc/systemd/
+        sudo cp -a $GITHUB_WORKSPACE/workspace/files/dhcp.conf rootfs/etc/dnsmasq.d/dhcp.conf
+        sudo cp -a $GITHUB_WORKSPACE/workspace/files/rc.local rootfs/etc/rc.local
+        sudo chmod +x rootfs/etc/rc.local
+        sudo cp -a $GITHUB_WORKSPACE/workspace/files/msm8916-usb-gadget.sh rootfs/usr/sbin/
+        sudo cp -a $GITHUB_WORKSPACE/workspace/files/msm8916-usb-gadget.conf rootfs/etc/
+        sudo chmod +x rootfs/usr/sbin/msm8916-usb-gadget.sh
+        sudo cp $GITHUB_WORKSPACE/workspace/files/*.nmconnection rootfs/etc/NetworkManager/system-connections
+        sudo chmod 0600 rootfs/etc/NetworkManager/system-connections/*
+        sudo cp $GITHUB_WORKSPACE/workspace/files/99-custom.conf rootfs/etc/NetworkManager/conf.d/
         sudo mount --bind /proc rootfs/proc 
         sudo mount --bind /dev rootfs/dev 
         sudo mount --bind /dev/pts rootfs/dev/pts 
