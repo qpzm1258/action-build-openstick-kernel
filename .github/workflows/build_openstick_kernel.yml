@@ -95,7 +95,7 @@ jobs:
             ;;
           custom)
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
-            cat $GITHUB_WORKSPACE/workspace/.config >> .config  # 使用仓库中的自定义配置
+            scripts/kconfig/merge_config.sh -m -Q .config  $GITHUB_WORKSPACE/workspace/.config # 使用仓库中的自定义配置
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
             ;;
         esac
