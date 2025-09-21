@@ -188,7 +188,7 @@ jobs:
         else
           PKGS="$PKGS bsdmainutils ifupdown isc-dhcp-client isc-dhcp-common netfilter-persistent rmtfs runit-helper util-linux-extra usrmerge"
         fi
-        if [ "$ver" = "trixie" ]; then
+        if [ "$ver" = "noble" ] || [ "$ver" = "plucky" ]; then
           PKGS="$PKGS iwd network-manager-iwd"
         else
           PKGS="$PKGS wpasupplicant"
@@ -248,6 +248,8 @@ jobs:
         if [ "$ver" = "trixie" ]; then
           sudo rm -f rootfs/etc/profile.d/mobile-tweaks-mali.sh
           sudo chroot rootfs /bin/bash -c "apt-mark hold mobile-tweaks-common"
+        fi
+        if [ "$ver" = "noble" ] || [ "$ver" = "plucky" ]; then
           sudo chroot rootfs /bin/bash -c "systemctl enable iwd"
           sudo chroot rootfs /bin/bash -c "echo '[device]' >> /etc/NetworkManager/NetworkManager.conf"
           sudo chroot rootfs /bin/bash -c "echo 'wifi.backend=iwd' >> /etc/NetworkManager/NetworkManager.conf"
@@ -347,7 +349,7 @@ jobs:
       uses: dev-drprasad/delete-older-releases@master
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
-        keep_latest: 2
+        keep_latest: 3
         delete_tags: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
