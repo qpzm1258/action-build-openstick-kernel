@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
-PART_DEV="/dev/mmcblk0"
-PART_NUM="14"
+DEVICE=/dev/mmcblk0
+PARTNR=14
 ROOTFS_DEV="/dev/disk/by-partlabel/rootfs"
 FLAG_FILE="/var/lib/resize-rootfs.done"
 
@@ -11,8 +11,9 @@ if [ -f "$FLAG_FILE" ]; then
     exit 0
 fi
 
-echo "[1/4] Using parted to expand ${PART_DEV}p${PART_NUM} to maximum size..."
-parted -s "$PART_DEV" resizepart "$PART_NUM" 100%
+echo "[1/4] Using parted to expand ${DEVICE}p${PARTNR} to maximum size..."
+parted --script ${DEVICE} resizepart ${PARTNR} 100% Yes
+echo "[done]"
 
 echo "[2/4] Detecting filesystem type of $ROOTFS_DEV..."
 FSTYPE=$(/sbin/blkid -o value -s TYPE "$ROOTFS_DEV")
@@ -22,13 +23,12 @@ echo "[3/4] Expanding filesystem..."
 case "$FSTYPE" in
     ext4)
         echo "Expanding ext4 filesystem..."
-        e2fsck -f "$ROOTFS_DEV"
         resize2fs "$ROOTFS_DEV"
         ;;
     btrfs)
         echo "Expanding btrfs filesystem..."
         mountpoint=$(findmnt -n -o TARGET "$ROOTFS_DEV")
-        if [ -z "$mountpoint" ]; then
+        if [[ -z "$mountpoint" ]]; then
             echo "btrfs not mounted, attempting to mount..."
             mount "$ROOTFS_DEV" /mnt
             btrfs filesystem resize max /mnt
