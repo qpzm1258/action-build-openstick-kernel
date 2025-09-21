@@ -248,6 +248,7 @@ jobs:
         if [ "$ver" = "trixie" ]; then
           sudo rm -f rootfs/etc/profile.d/mobile-tweaks-mali.sh
           sudo chroot rootfs /bin/bash -c "apt-mark hold mobile-tweaks-common"
+          sudo chroot rootfs /bin/bash -c "systemctl enable iwd"
           sudo chroot rootfs /bin/bash -c "echo '[device]' >> /etc/NetworkManager/NetworkManager.conf"
           sudo chroot rootfs /bin/bash -c "echo 'wifi.backend=iwd' >> /etc/NetworkManager/NetworkManager.conf"
         fi
@@ -255,7 +256,7 @@ jobs:
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/bin/adbd /usr/bin/gc /usr/sbin/*.sh"
-        sudo chroot rootfs /bin/bash -c "systemctl daemon-reload && systemctl enable openstick-button-monitor openstick-gc-startup openstick-startup-diagnose.timer iwd"
+        sudo chroot rootfs /bin/bash -c "systemctl enable openstick-button-monitor openstick-gc-startup openstick-startup-diagnose.timer"
         sudo chroot rootfs /bin/bash -c "find /var/log -type f -delete"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
