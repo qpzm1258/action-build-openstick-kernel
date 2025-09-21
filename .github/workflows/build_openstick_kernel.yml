@@ -257,6 +257,7 @@ jobs:
           sudo chroot rootfs /bin/bash -c "echo '[device]' >> /etc/NetworkManager/NetworkManager.conf"
           sudo chroot rootfs /bin/bash -c "echo 'wifi.backend=iwd' >> /etc/NetworkManager/NetworkManager.conf"
         fi
+        sudo sed -i 's/^#SIZE=[0-9]\+/SIZE=512/' rootfs/etc/default/zramswap
         # sudo chroot rootfs /bin/bash -c "dpkg-reconfigure openssh-server"
         sudo chroot rootfs /bin/bash -c "rm -f /etc/resolv.conf"
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
