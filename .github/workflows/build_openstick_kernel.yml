@@ -190,7 +190,7 @@ jobs:
         fi 
         if [ "$ver" = "trixie" ]; then
           PKGS="$PKGS iwd network-manager-iwd"
-        elif [ "$ver" = "noble" ]; then
+        elif [ "$ver" = "plucky" ]; then
           PKGS="$PKGS iwd"
         else
           PKGS="$PKGS wpasupplicant"
@@ -252,7 +252,7 @@ jobs:
           sudo rm -f rootfs/etc/profile.d/mobile-tweaks-mali.sh
           sudo chroot rootfs /bin/bash -c "apt-mark hold mobile-tweaks-common"
         fi
-        if [ "$ver" = "noble" ] || [ "$ver" = "trixie" ]; then
+        if [ "$ver" = "plucky" ] || [ "$ver" = "trixie" ]; then
           sudo chroot rootfs /bin/bash -c "systemctl enable iwd"
           sudo chroot rootfs /bin/bash -c "echo '[device]' >> /etc/NetworkManager/NetworkManager.conf"
           sudo chroot rootfs /bin/bash -c "echo 'wifi.backend=iwd' >> /etc/NetworkManager/NetworkManager.conf"
