@@ -71,6 +71,7 @@ openssh-client
 openssh-server
 openssh-sftp-server
 openssl
+parted
 passwd
 perl
 perl-base

@@ -4,7 +4,7 @@ ConditionFirstBoot=true
 
 [Service]
 Type=oneshot
-ExecStart=/sbin/resize2fs /dev/disk/by-partlabel/rootfs
+ExecStart=/usr/sbin/openstick-resize-rootfs.sh
 RemainAfterExit=yes
 
 [Install]

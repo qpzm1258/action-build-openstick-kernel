@@ -240,6 +240,7 @@ jobs:
         sudo chmod +x rootfs/etc/update-motd.d/10-uname
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/usr rootfs/
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
+        sudo chroot rootfs /bin/bash -c "chmod +x /usr/sbin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
