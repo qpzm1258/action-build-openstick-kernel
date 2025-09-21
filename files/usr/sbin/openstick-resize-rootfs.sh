@@ -12,7 +12,7 @@ if [ -f "$FLAG_FILE" ]; then
 fi
 
 echo "[1/4] Using parted to expand ${DEVICE}p${PARTNR} to maximum size..."
-parted --script ${DEVICE} resizepart ${PARTNR} 100% Yes
+parted --script --align=optimal ${DEVICE} resizepart ${PARTNR} 100% Yes
 echo "[done]"
 
 echo "[2/4] Detecting filesystem type of $ROOTFS_DEV..."
