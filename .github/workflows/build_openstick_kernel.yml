@@ -191,9 +191,9 @@ jobs:
         if [ "$ver" = "trixie" ]; then
           PKGS="$PKGS iwd network-manager-iwd"
         elif [ "$ver" = "noble" ]; then
-          PKGS="$PKGS iwd network-manager"
+          PKGS="$PKGS iwd"
         else
-          PKGS="$PKGS wpasupplicant network-manager"
+          PKGS="$PKGS wpasupplicant"
         fi
         if [[ -n "$PKGS" ]]; then
           sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"

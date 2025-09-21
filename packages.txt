@@ -66,6 +66,7 @@ ncurses-base
 ncurses-bin
 net-tools
 netbase
+network-manager
 openssh-client
 openssh-server
 openssh-sftp-server
