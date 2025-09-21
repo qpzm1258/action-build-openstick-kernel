@@ -5,31 +5,31 @@ PART_NUM="14"
 ROOTFS_DEV="/dev/disk/by-partlabel/rootfs"
 FLAG_FILE="/var/lib/resize-rootfs.done"
 
-# 1. 检查标记文件
+# 1. Check marker file
 if [ -f "$FLAG_FILE" ]; then
-    echo "标记文件已存在 ($FLAG_FILE)，跳过扩容。"
+    echo "Marker file exists ($FLAG_FILE), skipping resize."
     exit 0
 fi
 
-echo "[1/4] 使用 parted 扩展 ${PART_DEV}p${PART_NUM} 到最大..."
+echo "[1/4] Using parted to expand ${PART_DEV}p${PART_NUM} to maximum size..."
 parted -s "$PART_DEV" resizepart "$PART_NUM" 100%
 
-echo "[2/4] 检测 $ROOTFS_DEV 文件系统类型..."
+echo "[2/4] Detecting filesystem type of $ROOTFS_DEV..."
 FSTYPE=$(/sbin/blkid -o value -s TYPE "$ROOTFS_DEV")
-echo "检测到文件系统类型: $FSTYPE"
+echo "Detected filesystem type: $FSTYPE"
 
-echo "[3/4] 扩展文件系统..."
+echo "[3/4] Expanding filesystem..."
 case "$FSTYPE" in
     ext4)
-        echo "扩展 ext4 文件系统..."
+        echo "Expanding ext4 filesystem..."
         e2fsck -f "$ROOTFS_DEV"
         resize2fs "$ROOTFS_DEV"
         ;;
     btrfs)
-        echo "扩展 btrfs 文件系统..."
+        echo "Expanding btrfs filesystem..."
         mountpoint=$(findmnt -n -o TARGET "$ROOTFS_DEV")
         if [ -z "$mountpoint" ]; then
-            echo "未挂载 btrfs，尝试挂载..."
+            echo "btrfs not mounted, attempting to mount..."
             mount "$ROOTFS_DEV" /mnt
             btrfs filesystem resize max /mnt
             umount /mnt
@@ -38,13 +38,13 @@ case "$FSTYPE" in
         fi
         ;;
     *)
-        echo "不支持的文件系统类型: $FSTYPE"
+        echo "Unsupported filesystem type: $FSTYPE"
         exit 1
         ;;
 esac
 
-echo "[4/4] 创建标记文件..."
+echo "[4/4] Creating marker file..."
 mkdir -p "$(dirname "$FLAG_FILE")"
 touch "$FLAG_FILE"
 
-echo "✅ 分区与文件系统扩容完成，并已创建标记文件 $FLAG_FILE"
+echo "✅ Partition and filesystem resize completed, marker file created at $FLAG_FILE"
