@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 PART_DEV="/dev/mmcblk0"
 PART_NUM="14"
@@ -16,7 +15,7 @@ echo "[1/4] 使用 parted 扩展 ${PART_DEV}p${PART_NUM} 到最大..."
 parted -s "$PART_DEV" resizepart "$PART_NUM" 100%
 
 echo "[2/4] 检测 $ROOTFS_DEV 文件系统类型..."
-FSTYPE=$(blkid -o value -s TYPE "$ROOTFS_DEV")
+FSTYPE=$(/sbin/blkid -o value -s TYPE "$ROOTFS_DEV")
 echo "检测到文件系统类型: $FSTYPE"
 
 echo "[3/4] 扩展文件系统..."
