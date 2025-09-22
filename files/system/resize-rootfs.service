@@ -1,6 +1,8 @@
 [Unit]
 Description=Resize rootfs on first boot
 ConditionFirstBoot=true
+After=multi-user.target
+Requires=multi-user.target
 
 [Service]
 Type=oneshot
@@ -8,4 +10,4 @@ ExecStart=/usr/sbin/openstick-resize-rootfs.sh
 RemainAfterExit=yes
 
 [Install]
-WantedBy=sysinit.target
+WantedBy=multi-user.target
