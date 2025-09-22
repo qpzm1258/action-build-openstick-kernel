@@ -11,9 +11,9 @@ FLAG_FILE="/var/lib/resize-rootfs.done"
 #    exit 0
 # fi
 
-# echo "[1/4] Using parted to expand ${DEVICE}p${PARTNR} to maximum size..."
-# parted --script --align=optimal ${DEVICE} resizepart ${PARTNR} 100% >> /dev/null 2>&1
-# echo "[done]"
+echo "[1/4] Using parted to expand ${DEVICE}p${PARTNR} to maximum size..."
+echo Yes | parted --align=optimal ---pretend-input-tty ${DEVICE} resizepart ${PARTNR} 100% >> /dev/null 2>&1
+echo "[done]"
 
 echo "[2/4] Detecting filesystem type of $ROOTFS_DEV..."
 FSTYPE=$(/sbin/blkid -o value -s TYPE "$ROOTFS_DEV")

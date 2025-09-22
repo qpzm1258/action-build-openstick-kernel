@@ -268,6 +268,7 @@ jobs:
         sudo chroot rootfs /bin/bash -c "systemctl enable resize-rootfs.service getty@ttyGS0.service regenerate-ssh-host-keys.service"
         sudo chroot rootfs /bin/bash -c "find /var/log -type f -delete"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
+        sudo rm -f rootfs/etc/machine-id
         export PYTHONPATH=/usr/share/android-tools/mkbootimg
         INITRD=$(sudo ls -t rootfs/boot/initrd.img-* 2>/dev/null | head -n1 || true)
         if [ -z "$INITRD" ]; then
