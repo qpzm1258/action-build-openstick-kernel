@@ -209,7 +209,7 @@ jobs:
         sudo rm rootfs/usr/bin/qemu-aarch64-static
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/firmware rootfs/usr/lib/
         sudo chmod -R 644 rootfs/usr/lib/firmware
-        sudo cp -a --update=none $GITHUB_WORKSPACE/workspace/files/system/* rootfs/etc/systemd/
+        sudo cp -a --update=none $GITHUB_WORKSPACE/workspace/files/system/* rootfs/etc/systemd/system
         version="${{ steps.configure.outputs.kernel_ver }}"
         target_major=6
         target_minor=6
