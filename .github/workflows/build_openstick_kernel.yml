@@ -265,7 +265,7 @@ jobs:
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/bin/adbd /usr/bin/gc /usr/sbin/*.sh"
         sudo chroot rootfs /bin/bash -c "systemctl enable openstick-button-monitor openstick-gc-startup openstick-startup-diagnose.timer"
-        sudo chroot rootfs /bin/bash -c "systemctl enable resize-rootfs.service getty@ttyGS0.service regenerate-ssh-host-keys.service"
+        sudo chroot rootfs /bin/bash -c "systemctl enable resize-rootfs.service regenerate-ssh-host-keys.service"
         sudo chroot rootfs /bin/bash -c "find /var/log -type f -delete"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         sudo rm -f rootfs/etc/machine-id
