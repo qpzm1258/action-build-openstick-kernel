@@ -6,14 +6,14 @@ ROOTFS_DEV="/dev/disk/by-partlabel/rootfs"
 FLAG_FILE="/var/lib/resize-rootfs.done"
 
 # 1. Check marker file
-if [ -f "$FLAG_FILE" ]; then
-    echo "Marker file exists ($FLAG_FILE), skipping resize."
-    exit 0
-fi
+# if [ -f "$FLAG_FILE" ]; then
+#    echo "Marker file exists ($FLAG_FILE), skipping resize."
+#    exit 0
+# fi
 
-echo "[1/4] Using parted to expand ${DEVICE}p${PARTNR} to maximum size..."
-parted --script --align=optimal ${DEVICE} resizepart ${PARTNR} 100% >> /dev/null 2>&1
-echo "[done]"
+# echo "[1/4] Using parted to expand ${DEVICE}p${PARTNR} to maximum size..."
+# parted --script --align=optimal ${DEVICE} resizepart ${PARTNR} 100% >> /dev/null 2>&1
+# echo "[done]"
 
 echo "[2/4] Detecting filesystem type of $ROOTFS_DEV..."
 FSTYPE=$(/sbin/blkid -o value -s TYPE "$ROOTFS_DEV")
@@ -43,8 +43,8 @@ case "$FSTYPE" in
         ;;
 esac
 
-echo "[4/4] Creating marker file..."
-mkdir -p "$(dirname "$FLAG_FILE")"
-touch "$FLAG_FILE"
+# echo "[4/4] Creating marker file..."
+# mkdir -p "$(dirname "$FLAG_FILE")"
+# touch "$FLAG_FILE"
 
 echo "✅ Partition and filesystem resize completed, marker file created at $FLAG_FILE"
