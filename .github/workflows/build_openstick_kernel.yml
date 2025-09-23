@@ -187,13 +187,14 @@ jobs:
           PKGS="$PKGS bsdextrautils systemd-resolved"
         else
           PKGS="$PKGS bsdmainutils ifupdown isc-dhcp-client isc-dhcp-common netfilter-persistent rmtfs runit-helper util-linux-extra usrmerge"
-        fi 
-        if [ "$ver" = "trixie" ]; then
-          PKGS="$PKGS iwd network-manager-iwd"
-        elif [ "$OSTYPE" = "ubuntu" ]; then
-          PKGS="$PKGS iwd"
-        else
+        fi
+        if [ "$ver" = "bookworm" ]; then
           PKGS="$PKGS wpasupplicant"
+        else
+          PKGS="$PKGS iwd"
+        fi
+        if [ "$ver" = "trixie" ]; then
+          PKGS="$PKGS network-manager-iwd"
         fi
         if [[ -n "$PKGS" ]]; then
           sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
@@ -253,7 +254,7 @@ jobs:
           sudo rm -f rootfs/etc/profile.d/mobile-tweaks-mali.sh
           sudo chroot rootfs /bin/bash -c "apt-mark hold mobile-tweaks-common"
         fi
-        if [ "$OSTYPE" = "ubuntu" ] || [ "$ver" = "trixie" ]; then
+        if [ "$ver" != "bookworm" ]; then
           sudo chroot rootfs /bin/bash -c "systemctl enable iwd"
           sudo chroot rootfs /bin/bash -c "echo '[device]' >> /etc/NetworkManager/NetworkManager.conf"
           sudo chroot rootfs /bin/bash -c "echo 'wifi.backend=iwd' >> /etc/NetworkManager/NetworkManager.conf"
