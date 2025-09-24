@@ -1,0 +1,19 @@
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 16ebf5349c95..2009ac2594d8 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -259,6 +259,14 @@ opp-800000000 {
+                opp-998400000 {
+                        opp-hz = /bits/ 64 <998400000>;
+                };
++               /* Added: 1.0944 GHz */
++               opp-1094400000 {
++                       opp-hz = /bits/ 64 <1094400000>;
++               };
++               /* Added: 1.2096 GHz */
++               opp-1209600000 {
++                       opp-hz = /bits/ 64 <1209600000>;
++               };
+        };
+
+        firmware {

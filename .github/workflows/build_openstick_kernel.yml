@@ -28,7 +28,7 @@ on:
       upload_release:
         description: 'Upload firmware to release'
         required: false
-        default: 'false'
+        default: 'true'
       localversion:
         description: 'Set your localversion(e.g. -openstick)'
         required: false
@@ -41,6 +41,10 @@ on:
         options:
           - btrfs
           - ext4
+      overclock:
+        description: 'Overclock to 1.2Ghz'
+        required: false
+        default: 'false'
 
 jobs:
   build_debian:
@@ -101,6 +105,9 @@ jobs:
         esac
         make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 savedefconfig
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
+        if [ "${{ inputs.localversion }}" = "true" ]
+          git apply $GITHUB_WORKSPACE/workspace/patch/overclock.patch
+        fi
         if [ ! -z "${{ inputs.localversion }}" ]; then
           sed -i "s/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/" .config
         fi
