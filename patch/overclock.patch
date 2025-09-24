@@ -2,7 +2,7 @@ diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/ms
 index 16ebf5349c95..2009ac2594d8 100644
 --- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
 +++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -259,6 +259,14 @@ opp-800000000 {
+@@ -258,6 +258,14 @@ opp-800000000 {
                 opp-998400000 {
                         opp-hz = /bits/ 64 <998400000>;
                 };
