@@ -4,7 +4,3 @@ Description=One-time startup diagnose for MSM8916 sticks.
 [Service] 
 Type=oneshot
 ExecStart=/usr/sbin/openstick-startup-diagnose.sh
-
-[Install] 
-WantedBy=default.target
-

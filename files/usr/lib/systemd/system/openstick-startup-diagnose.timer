@@ -2,9 +2,9 @@
 Description=Runs openstick-startup-diagnose.service 1 minute after boot up
 
 [Timer] 
-OnBootSec=1 m 
+OnBootSec=1min
 Unit=openstick-startup-diagnose.service 
 
 [Install] 
-WantedBy=default.target
+WantedBy=timers.target
 
