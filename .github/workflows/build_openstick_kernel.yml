@@ -151,7 +151,7 @@ jobs:
           sudo losetup -fP root.img
           sudo mount -t btrfs -o compress=zstd,defaults,noatime,sync /dev/loop0 img/
         elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-          sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression root.img
+          mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression root.img
           sudo losetup -fP root.img
           sudo mount -t f2fs -o compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard /dev/loop0 img/
         else
