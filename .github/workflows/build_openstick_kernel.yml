@@ -105,7 +105,7 @@ jobs:
         esac
         make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 savedefconfig
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
-        if [ "${{ inputs.localversion }}" = "true" ]; then
+        if [ "${{ inputs.localversion }}" = "true" ]
           git apply $GITHUB_WORKSPACE/workspace/patch/overclock.patch
         fi
         if [ ! -z "${{ inputs.localversion }}" ]; then
