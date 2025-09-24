@@ -153,7 +153,6 @@ jobs:
         elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
           sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression root.img
           sudo losetup -fP root.img
-          sudo modprobe f2fs
           sudo mount -t f2fs -o compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard /dev/loop0 img/
         else
           sudo mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
