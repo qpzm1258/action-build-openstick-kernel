@@ -41,7 +41,6 @@ on:
         options:
           - btrfs
           - ext4
-          - f2fs
 
 jobs:
   build_debian:
@@ -62,7 +61,7 @@ jobs:
           gcc-14 g++-14 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-14-aarch64-linux-gnu \
-          curl libdw-dev f2fs-tools
+          curl libdw-dev
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
           sudo dpkg -i mkbootimg_34.0.5-12_all.deb
           wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.141_all.deb
@@ -150,10 +149,6 @@ jobs:
           sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
           sudo losetup -fP root.img
           sudo mount -t btrfs -o compress=zstd,defaults,noatime,sync /dev/loop0 img/
-        elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-          mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression root.img
-          sudo losetup -fP root.img
-          sudo mount -t f2fs -o compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard /dev/loop0 img/
         else
           sudo mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
           sudo losetup -fP root.img
@@ -286,8 +281,6 @@ jobs:
         cp $INITRD $GITHUB_WORKSPACE/artifacts/
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
           CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2,commit=5 console=ttyMSM0,115200 no_framebuffer=true rw"
-        elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootfstype=f2fs rootflags=compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard console=ttyMSM0,115200 no_framebuffer=true rw"
         else
           CMDLINE="earlycon root=LABEL=rootfs console=ttyMSM0,115200 no_framebuffer=true rw"
         fi
