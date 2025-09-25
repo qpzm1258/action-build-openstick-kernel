@@ -237,7 +237,6 @@ jobs:
         sudo cp $GITHUB_WORKSPACE/artifacts/*.deb rootfs/root/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.rules rootfs/etc/udev/rules.d/
         sudo cp $GITHUB_WORKSPACE/workspace/files/*.sh rootfs/usr/local/bin/
-        sudo cp $GITHUB_WORKSPACE/workspace/files/wifi.conf rootfs/etc/
         sudo cp $GITHUB_WORKSPACE/workspace/files/10-uname rootfs/etc/update-motd.d/
         sudo chmod +x rootfs/etc/update-motd.d/10-uname
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/usr rootfs/
@@ -267,7 +266,7 @@ jobs:
         sudo chroot rootfs /bin/bash -c "rm -rf /var/lib/apt/lists/*"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/bin/adbd /usr/bin/gc /usr/sbin/*.sh"
         sudo chroot rootfs /bin/bash -c "systemctl enable openstick-button-monitor openstick-gc-startup openstick-startup-diagnose.timer"
-        sudo chroot rootfs /bin/bash -c "systemctl enable resize-rootfs.service regenerate-ssh-host-keys.service wifi-connect.service"
+        sudo chroot rootfs /bin/bash -c "systemctl enable resize-rootfs.service regenerate-ssh-host-keys.service"
         sudo chroot rootfs /bin/bash -c "find /var/log -type f -delete"
         sudo chroot rootfs /bin/bash -c "cat /dev/null > /root/.bash_history"
         sudo rm -f rootfs/etc/machine-id
