@@ -144,7 +144,7 @@ jobs:
       run: |
         mkdir -p rootfs 
         mkdir -p img
-        sudo truncate -s 1.5G root.img
+        sudo truncate -s 1073741824  root.img
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
           sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
           sudo losetup -fP root.img
