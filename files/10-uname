@@ -28,7 +28,7 @@ echo "${YELLOW}-------------------------- EMCP信息 --------------------------$
 mmc_info=$(cat /sys/class/mmc_host/mmc0/mmc0\:0001/life_time | awk '{printf "%.0f%%-%.0f%%",100-strtonum($1)*10,100-(strtonum($2)-1)*10};{if(strtonum($1)<8) {print " 正常";} else if(strtonum($1)<10) {print " 寿命即将耗尽"} else {print " 损坏"}}')
 [ -n "$mmc_info" ] && echo "${YELLOW}EMCP寿命: ${BLUE}$mmc_info${NC}"
 echo "${YELLOW}内存:  ${BLUE}$(free -m | awk 'NR==2{printf "%s/%sMiB (%.2f%%)\n", $3,$2,$3*100/$2 }')${NC}"
-echo "${YELLOW}Disk: ${BLUE}$(df -h | awk '/\/$/ {printf "%s/%sMiB (%s)\n", $3,$2,$5 }')${NC}"
+echo "${YELLOW}Disk: ${BLUE}$(df -m | awk '/\/$/ {printf "%s/%sMiB (%s)\n", $3,$2,$5 }')${NC}"
 
 echo "${YELLOW}-------------------------- 运行信息 --------------------------${NC}"
 uptime=$(uptime | sed 's/up/已运行:/g; s/mins/分钟/g; s/min/分钟/g; s/days/天/g; s/day/天/g; s/users/个登录用户/g; s/user/个登录用户/g; s/load average/平均负载/g')
