@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case $1 in
+  prereqs) prereqs; exit 0 ;;
+esac
+
+mkdir -p "${DESTDIR}/sbin"
+cp -a /usr/sbin/fsck.f2fs "${DESTDIR}/sbin"
+ln -sf fsck.f2fs "${DESTDIR}/sbin/resize.f2fs"
+mkdir -p "${DESTDIR}/lib"
+ln -sf aarch64-linux-gnu/libc.so.6 "${DESTDIR}/lib/libc.so.6"
+ln -sf aarch64-linux-gnu/libselinux.so.1 "${DESTDIR}/lib/libselinux.so.1"
+ln -sf aarch64-linux-gnu/libpcre2-8.so.0 "${DESTDIR}/lib/libpcre2-8.so.0"
+

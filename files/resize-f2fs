@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case $1 in
+  prereqs) prereqs; exit 0 ;;
+esac
+
+ROOTDEV="/dev/mmcblk0p14"
+MARKER="/etc/.resized"
+
+# mount rootfs readonly
+mkdir -p /tmp_root
+mount -o ro $ROOTDEV /tmp_root
+
+if [ -f /tmp_root$MARKER ]; then
+    echo "Rootfs already resized, skipping."
+else
+    echo "Resizing rootfs..."
+    umount /tmp_root
+    resize.f2fs -f $ROOTDEV || echo "resize.f2fs failed"
+    mount -o rw $ROOTDEV /tmp_root
+    touch /tmp_root$MARKER
+fi
+
+umount /tmp_root
+rmdir /tmp_root
