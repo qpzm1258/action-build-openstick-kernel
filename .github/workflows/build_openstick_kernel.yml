@@ -240,6 +240,10 @@ jobs:
         sudo cp $GITHUB_WORKSPACE/workspace/files/10-uname rootfs/etc/update-motd.d/
         sudo chmod +x rootfs/etc/update-motd.d/10-uname
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/usr rootfs/
+        # sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/f2fs_resize rootfs/etc/initramfs-tools/hooks/
+        # sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/resize-f2fs rootfs/etc/initramfs-tools/scripts/init-premount/
+        # sudo chmod +x rootfs/etc/initramfs-tools/hooks/f2fs_resize
+        # sudo chmod +x rootfs/etc/initramfs-tools/scripts/init-premount/resize-f2fs
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/sbin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
