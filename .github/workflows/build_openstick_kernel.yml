@@ -197,9 +197,9 @@ jobs:
           PKGS="$PKGS network-manager-iwd"
         fi
         if [[ -n "$PKGS" ]]; then
-          sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=standard --components="$DEBSRC" --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" --include="$PKGS" ${{ inputs.debian_version }} rootfs "$DEBURL"
         else
-          sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=standard --components="$DEBSRC" ${{ inputs.debian_version }} rootfs "$DEBURL"
+          sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" ${{ inputs.debian_version }} rootfs "$DEBURL"
         fi
         sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
         sudo chroot rootfs /debootstrap/debootstrap --second-stage
