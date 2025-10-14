@@ -2,7 +2,6 @@
 # Automatically detect the current source version and update to the latest patch level
 # Usage: Run ./update-kernel.sh inside the kernel source directory
 
-set -e
 
 # Read the current source version (must be executed inside the kernel source directory)
 CUR=$(make kernelversion)
