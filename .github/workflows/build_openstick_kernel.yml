@@ -16,7 +16,15 @@ on:
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
+        type: choice
         default: 'v6.12.1-msm8916'
+        options:
+          - 'v6.12.1-msm8916'
+          - 'v6.6-msm8916'
+      update_last_kernel_patch:
+        description: 'Do you want to update the kernel to the latest patch?'
+        required: true
+        default: 'false'
       config_profile:
         description: 'Config profile (defconfig/custom)'
         required: true
@@ -103,6 +111,10 @@ jobs:
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
         if [ ! -z "${{ inputs.localversion }}" ]; then
           sed -i "s/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/" .config
+        fi
+        if [ "${{ inputs.update_last_kernel_patch }}"="true" ]; then
+          chmod +x $GITHUB_WORKSPACE/workspace/update-kernel.sh
+          $GITHUB_WORKSPACE/workspace/update-kernel.sh
         fi
         KERNEL_VER=$(make kernelversion)
         echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
