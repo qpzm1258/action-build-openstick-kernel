@@ -10,6 +10,7 @@ echo "Current source version: $CUR"
 # Split major and minor version
 MAJOR=$(echo $CUR | cut -d. -f1)
 MINOR=$(echo $CUR | cut -d. -f2)
+SUBLEVEL=$(echo $CUR | cut -d. -f3)
 
 # Extract only the mainline version (e.g. 6.12.1 -> 6.12)
 VERSION="$MAJOR.$MINOR"
@@ -34,6 +35,13 @@ CUR_PATCH=$(echo $CUR | cut -d. -f3)
 if [ "$CUR_PATCH" = "$LATEST" ]; then
     echo "Current version is already the latest ($CUR)"
     exit 0
+fi
+
+if [ "${SUBLEVEL:-0}" -ne 0 ]; then
+    echo "Revert patch to mainline"
+    wget -c "$BASE_URL/patch-$VERSION.$SUBLEVEL.xz"
+    unxz -f "patch-$VERSION.$SUBLEVEL.xz"
+    patch -p1 -R < "patch-$VERSION.$SUBLEVEL"
 fi
 
 # Download patch
