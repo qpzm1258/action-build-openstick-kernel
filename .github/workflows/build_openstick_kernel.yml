@@ -97,6 +97,10 @@ jobs:
       id: configure
       run: |
         cd linux-src
+        if [ "${{ inputs.update_last_kernel_patch }}"="true" ]; then
+          chmod +x $GITHUB_WORKSPACE/workspace/update-kernel.sh
+          $GITHUB_WORKSPACE/workspace/update-kernel.sh
+        fi
         case "${{ inputs.config_profile }}" in
           defconfig)
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 msm8916_defconfig
@@ -111,10 +115,6 @@ jobs:
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
         if [ ! -z "${{ inputs.localversion }}" ]; then
           sed -i "s/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/" .config
-        fi
-        if [ "${{ inputs.update_last_kernel_patch }}"="true" ]; then
-          chmod +x $GITHUB_WORKSPACE/workspace/update-kernel.sh
-          $GITHUB_WORKSPACE/workspace/update-kernel.sh
         fi
         KERNEL_VER=$(make kernelversion)
         echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
