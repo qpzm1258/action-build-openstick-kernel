@@ -262,7 +262,6 @@ jobs:
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
         if [ "$OSTYPE" = "debian" ]; then
-          sudo wget -O rootfs/etc/apt/trusted.gpg.d/mobian.gpg https://repo.mobian-project.org/mobian.gpg
           wget -O- https://repo.mobian-project.org/mobian.gpg \
             | gpg --dearmor \
             | sudo tee rootfs/usr/share/keyrings/mobian-archive-keyring.gpg > /dev/null
