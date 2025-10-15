@@ -261,11 +261,10 @@ jobs:
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
+        sudo chroot rootfs /bin/bash -c "apt-mark hold linux-libc-dev"
         if [ "$OSTYPE" = "debian" ]; then
-          wget -O- https://repo.mobian-project.org/mobian.gpg \
-            | gpg --dearmor \
-            | sudo tee rootfs/usr/share/keyrings/mobian-archive-keyring.gpg > /dev/null
-          sudo chroot rootfs /bin/bash -c "echo 'deb [signed-by=/usr/share/keyrings/mobian-archive-keyring.gpg] http://repo.mobian-project.org/ ${{ inputs.debian_version }} main non-free-firmware' > /etc/apt/sources.list.d/mobian.list"
+          curl -s https://repo.mobian-project.org/mobian.gpg | sudo tee /usr/share/keyrings/mobian.gpg > /dev/null
+          sudo chroot rootfs /bin/bash -c "echo 'deb [signed-by=/usr/share/keyrings/mobian.gpg] http://repo.mobian-project.org/ ${{ inputs.debian_version }} main non-free-firmware' > /etc/apt/sources.list.d/mobian.list"
           sudo chroot rootfs /bin/bash -c "apt-get update && apt-get install -qqy --no-install-recommends modemmanager qrtr-tools systemd-timesyncd mobile-broadband-provider-info mobian-tweaks-common"
         fi
         if [ "$ver" = "trixie" ]; then
