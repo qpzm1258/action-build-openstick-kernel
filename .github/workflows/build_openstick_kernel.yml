@@ -21,6 +21,7 @@ on:
         options:
           - 'v6.12.1-msm8916'
           - 'v6.6-msm8916'
+          - 'wip/msm8916/6.19'
       update_last_kernel_patch:
         description: 'Do you want to update the kernel to the latest patch?'
         required: true
