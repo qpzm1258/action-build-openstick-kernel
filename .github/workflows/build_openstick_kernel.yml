@@ -98,7 +98,7 @@ jobs:
       id: configure
       run: |
         cd linux-src
-        if [ "${{ inputs.update_last_kernel_patch }}"="true" ]; then
+        if [ "${{ inputs.update_last_kernel_patch }}" == "true" ]; then
           chmod +x $GITHUB_WORKSPACE/workspace/update-kernel.sh
           $GITHUB_WORKSPACE/workspace/update-kernel.sh
         fi
