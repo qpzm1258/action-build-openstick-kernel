@@ -39,6 +39,7 @@ locales
 logsave
 lsb-base
 man-db
+mkbootimg
 modemmanager
 nano
 ncal
