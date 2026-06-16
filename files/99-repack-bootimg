@@ -1,0 +1,108 @@
+#!/bin/sh
+set -e
+
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo "$0" "$@"
+fi
+
+if ! command -v mkbootimg >/dev/null 2>&1; then
+    echo "ERROR: mkbootimg not found"
+    exit 1
+fi
+
+if ! command -v mkinitramfs >/dev/null 2>&1; then
+    echo "ERROR: mkinitramfs (initramfs-tools) is not installed."
+    echo "Please install it with:"
+    echo "  apt install initramfs-tools"
+    exit 1
+fi
+
+VERSION="$1"
+
+VMLINUZ="/boot/vmlinuz-${VERSION}"
+IMAGE_GZ="/usr/lib/linux-image-${VERSION}/Image.gz"
+DTB_PATH="/usr/lib/linux-image-${VERSION}/qcom/msm8916-thwc-ufi001c.dtb"
+
+[ -f "$VMLINUZ" ] || exit 0
+[ -f "$DTB_PATH" ] || exit 1
+
+BOOTDEV="/dev/mmcblk0p12"
+
+PAGESIZE=2048
+BASE=0x80000000
+KERNEL_OFFSET=0x00008000
+RAMDISK_OFFSET=0x01000000
+TAGS_OFFSET=0x00000100
+
+TMPDIR="$(mktemp -d /tmp/repack-bootimg.XXXXXX)"
+trap "rm -rf $TMPDIR" EXIT
+
+# ===== ARM64: vmlinuz 就是 Image.gz =====
+mkdir -p "/usr/lib/linux-image-${VERSION}/"
+cp "$VMLINUZ" "$IMAGE_GZ"
+
+# ===== 生成 initramfs（ramdisk）=====
+RAMDISK_DIR="$TMPDIR/initramfs"
+mkdir -p "$RAMDISK_DIR"
+
+# 删除resizef2fs脚本
+rm -f /etc/initramfs-tools/hooks/f2fs_resize
+rm -f /etc/initramfs-tools/scripts/init-premount/resize-f2fs
+
+# 生成基础 initramfs
+mkinitramfs -o "$TMPDIR/ramdisk-base.img" "$VERSION"
+
+# 解包 initramfs
+cd "$RAMDISK_DIR"
+INITRAMFS="$TMPDIR/ramdisk-base.img"
+zstd -dc "$INITRAMFS" | cpio -idmu
+
+# ===== 把 firmware 打包进 initramfs =====
+# 支持两种路径：qcom/ 和 wlan/prima/
+FW_SRC="/lib/firmware"
+
+mkdir -p "$RAMDISK_DIR/lib/firmware"
+mkdir -p "$RAMDISK_DIR/lib/firmware/wlan/prima"
+
+if ls $FW_SRC/wcnss.* >/dev/null 2>&1; then
+    cp $FW_SRC/wcnss.* "$RAMDISK_DIR/lib/firmware/"
+fi
+
+if ls $FW_SRC/wlan/prima/WCNSS_qcom_wlan_nv.bin >/dev/null 2>&1; then
+    cp -a $FW_SRC/wlan "$RAMDISK_DIR/lib/firmware/"
+fi
+
+echo "==> Firmware added to initramfs"
+
+# 重新打包 initramfs
+find . | cpio -o -H newc | zstd -19 --format=zstd > "$TMPDIR/ramdisk.img"
+
+
+# ===== 过滤 cmdline =====
+RAW_CMDLINE="$(dmesg | grep -o 'command line: .*' | sed 's/command line: //')"
+CMDLINE="$(echo "$RAW_CMDLINE" \
+    | sed 's/androidboot\.[^ ]*//g' \
+    | sed 's/mdss_mdp\.panel=[^ ]*//g' \
+    | tr -s ' ' \
+)"
+
+# ===== 合并 dtb =====
+IMG_DTB="$TMPDIR/Image.gz-dtb"
+cat "$IMAGE_GZ" "$DTB_PATH" > "$IMG_DTB"
+
+OUT_BOOTIMG="$TMPDIR/boot-new.img"
+
+mkbootimg \
+  --kernel "$IMG_DTB" \
+  --ramdisk "$TMPDIR/ramdisk.img" \
+  --pagesize "$PAGESIZE" \
+  --base "$BASE" \
+  --kernel_offset "$KERNEL_OFFSET" \
+  --ramdisk_offset "$RAMDISK_OFFSET" \
+  --tags_offset "$TAGS_OFFSET" \
+  --cmdline "$CMDLINE" \
+  -o "$OUT_BOOTIMG"
+
+dd if="$OUT_BOOTIMG" of="$BOOTDEV" bs=4M conv=fsync
+
+echo "==> boot.img updated successfully"
