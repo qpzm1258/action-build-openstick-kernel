@@ -22,6 +22,7 @@ on:
           - 'v6.12.1-msm8916'
           - 'v6.6-msm8916'
           - 'wip/msm8916/6.19'
+          - 'wip/msm8916/7.0'
       update_last_kernel_patch:
         description: 'Do you want to update the kernel to the latest patch?'
         required: true
@@ -112,13 +113,24 @@ jobs:
             make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
             ;;
         esac
+        KERNEL_VER=$(make kernelversion)
+        echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
+        version="$KERNEL_VER"
+        # 去掉 -rc 等后缀，只取前两位
+        clean_version=$(echo "$version" | sed 's/-.*//' )
+        IFS='.' read -r major minor _ <<< "$clean_version"
+        echo "Parsed version: $major.$minor"
+        if (( major > 6 )) || { (( major <= 6 )) && (( minor > 18 )); }; then
+          echo "Kernel version is greater than 6.18, set CONFIG_CRYPTO_MD5=y and CONFIG_CRYPTO_SHA512=y to fix iwd issus"
+          echo "CONFIG_CRYPTO_MD5=y" >> .config
+          echo "CONFIG_CRYPTO_SHA512=y" >> .config
+          make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 olddefconfig
+        fi
         make ARCH=$ARCH CC=gcc-14 HOSTCC=gcc-14 savedefconfig
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
         if [ ! -z "${{ inputs.localversion }}" ]; then
           sed -i "s/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/" .config
         fi
-        KERNEL_VER=$(make kernelversion)
-        echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
         
     - name: SSH connection to Actions
       uses: P3TERX/ssh2actions@v1.0.0
