@@ -269,16 +269,16 @@ jobs:
         # sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/resize-f2fs rootfs/etc/initramfs-tools/scripts/init-premount/
         # sudo chmod +x rootfs/etc/initramfs-tools/hooks/f2fs_resize
         # sudo chmod +x rootfs/etc/initramfs-tools/scripts/init-premount/resize-f2fs
-        
-        # add hook to update boot.img after intall new kernel deb
-        sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/99-repack-bootimg rootfs/etc/kernel/postinst.d/
-        sudo chmod +x rootfs/etc/kernel/postinst.d/99-repack-bootimg
-
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/sbin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
         sudo chroot rootfs /bin/bash -c "dpkg -i /root/*.deb"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*.deb"
+        
+        # add hook to update boot.img after intall new kernel deb
+        sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/99-repack-bootimg rootfs/etc/kernel/postinst.d/
+        sudo chmod +x rootfs/etc/kernel/postinst.d/99-repack-bootimg
+
         sudo chroot rootfs /bin/bash -c "apt-mark hold linux-libc-dev"
         if [ "$OSTYPE" = "debian" ]; then
           sudo curl -o rootfs/etc/apt/trusted.gpg.d/mobian.gpg https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/master/mobian-archive-keyring.gpg
