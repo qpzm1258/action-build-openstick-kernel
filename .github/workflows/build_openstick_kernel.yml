@@ -74,7 +74,7 @@ jobs:
           gcc-15 g++-15 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-15-aarch64-linux-gnu \
-          curl libdw-dev f2fs-tools fakeroot
+          curl libdw-dev f2fs-tools fakeroot gh
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
           sudo dpkg -i mkbootimg_34.0.5-12_all.deb
           wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.144_all.deb
@@ -182,7 +182,7 @@ jobs:
           sudo losetup -fP root.img
           sudo mount -o sync /dev/loop0 img/
         elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-        	mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression -s 8 root.img
+        	sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression -s 8 root.img
         fi
         echo "status=success" >>$GITHUB_OUTPUT
   
@@ -353,7 +353,7 @@ jobs:
         sudo umount rootfs/sys
         if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
           echo "Write root files to f2fs img."
-        	fakeroot sload.f2fs -f rootfs -c -a lz4 -x gz,zip,png,jpg,xz,tgz,deb root.img
+        	sudo sload.f2fs -f rootfs -c -a lz4 -x gz,zip,png,jpg,xz,tgz,deb root.img
           echo "Finish to write root files to f2fs img."
         else
         	sudo rsync -axv rootfs/* img
