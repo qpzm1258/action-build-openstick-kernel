@@ -353,7 +353,7 @@ jobs:
         sudo umount rootfs/sys
         if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
           echo "Write root files to f2fs img."
-        	sudo sload.f2fs -f rootfs -c -a lz4 -x gz,zip,png,jpg,xz,tgz,deb root.img
+        	fakeroot sload.f2fs -f rootfs -c lz4 -x gz,zip,png,jpg,xz,tgz,deb root.img
           echo "Finish to write root files to f2fs img."
         else
         	sudo rsync -axv rootfs/* img
@@ -413,18 +413,25 @@ jobs:
     # 11. 删除旧的release
     - name: Delete old releases
       run: |
-        gh release list --limit 100 | tail -n +4 | awk '{print $1}' | while read tag; do
-          gh release delete "$tag" --yes
-        done
+        gh api repos/${{ github.repository }}/releases --jq '.[].tag_name' |
+          tail -n +4 |
+          while read tag; do
+            gh api repos/${{ github.repository }}/releases/tags/$tag -X DELETE
+          done
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # 11. 删除旧的tags        
+    # 12. 删除旧的tags        
     - name: Delete old tags
       run: |
-        gh tag list --limit 200 | tail -n +6 | while read tag; do
-          gh tag delete "$tag" --yes
-        done
+        gh api repos/${{ github.repository }}/git/refs/tags --jq '.[].ref' |
+          sed 's#refs/tags/##' |
+          tail -n +6 |
+          while read tag; do
+            gh api \
+              repos/${{ github.repository }}/git/refs/tags/$tag \
+              -X DELETE
+          done
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
