@@ -396,18 +396,29 @@ jobs:
           rootfs.img
           boot.img
 
+    # 10. 删除runs
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
       with:
         retain_days: 1
         keep_minimum_runs: 3
 
-    - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@v0.3.4
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      with:
-        keep_latest: 3
-        delete_tags: true
+    # 11. 删除旧的release
+    - name: Delete old releases
+      run: |
+        gh release list --limit 100 | tail -n +4 | awk '{print $1}' | while read tag; do
+          gh release delete "$tag" --yes
+        done
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # 11. 删除旧的tags        
+    - name: Delete old tags
+      run: |
+        gh tag list --limit 200 | tail -n +6 | while read tag; do
+          gh tag delete "$tag" --yes
+        done
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
