@@ -402,37 +402,14 @@ jobs:
           boot.img
 
     # 10. 删除runs
-    - name: Delete workflow runs
-      uses: Mattraks/delete-workflow-runs@main
+    - name: Delete releases and workflows runs
+      uses: ophub/delete-releases-workflows@main
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        repository: ${{ github.repository }}
-        retain_days: 7
-        keep_minimum_runs: 3
-
-    # 11. 删除旧的release
-    - name: Delete old releases
-      run: |
-        gh api repos/${{ github.repository }}/releases --jq '.[].tag_name' |
-          tail -n +4 |
-          while read tag; do
-            gh api repos/${{ github.repository }}/releases/tags/$tag -X DELETE
-          done
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # 12. 删除旧的tags        
-    - name: Delete old tags
-      run: |
-        gh api repos/${{ github.repository }}/git/refs/tags --jq '.[].ref' |
-          sed 's#refs/tags/##' |
-          tail -n +6 |
-          while read tag; do
-            gh api \
-              repos/${{ github.repository }}/git/refs/tags/$tag \
-              -X DELETE
-          done
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        delete_releases: true
+        releases_keep_latest: 3
+        delete_tags: true
+        delete_workflows: true
+        workflows_keep_day: 10
+        gh_token: ${{ secrets.GITHUB_TOKEN }}
 
 
