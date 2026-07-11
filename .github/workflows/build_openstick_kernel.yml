@@ -353,7 +353,7 @@ jobs:
         sudo umount rootfs/sys
         if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
           echo "Write root files to f2fs img."
-        	fakeroot sload.f2fs -c -f rootfs  root.img
+        	sudo sload.f2fs -f rootfs  root.img
           echo "Finish to write root files to f2fs img."
         else
         	sudo rsync -axv rootfs/* img
