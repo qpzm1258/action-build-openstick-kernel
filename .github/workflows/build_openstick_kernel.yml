@@ -13,6 +13,7 @@ on:
           - trixie
           - noble
           - plucky
+          - resolute
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
@@ -51,6 +52,7 @@ on:
         options:
           - btrfs
           - ext4
+          - f2fs
 
 jobs:
   build_debian:
@@ -71,16 +73,19 @@ jobs:
           gcc-14 g++-14 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-14-aarch64-linux-gnu \
-          curl libdw-dev
+          curl libdw-dev f2fs-tools fakeroot
           wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
           sudo dpkg -i mkbootimg_34.0.5-12_all.deb
-          wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.141_all.deb
-          sudo dpkg -i debootstrap_1.0.141_all.deb
+          wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.144_all.deb
+          sudo dpkg -i debootstrap_1.0.144_all.deb
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
     - name: Checkout Workflow Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4    # 7. 生成boot.img
+    - name: Build Boot img
+      id: bootimg
+      if: steps.root.outputs.status == 'success' && !cancelled()
       with:
         lfs: true
         submodules: recursive
@@ -174,14 +179,19 @@ jobs:
           sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
           sudo losetup -fP root.img
           sudo mount -t btrfs -o compress=zstd,defaults,noatime,sync /dev/loop0 img/
-        else
+        elif [ "${{ inputs.rootfs_type }}" = "ext4" ]; then
           sudo mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
           sudo losetup -fP root.img
           sudo mount -o sync /dev/loop0 img/
+        elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
+        	sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression -s 8 root.img
         fi
         echo "status=success" >>$GITHUB_OUTPUT
   
-    # 7. 生成boot.img
+    # 7. 生成boot.img    # 7. 生成boot.img
+    - name: Build Boot img
+      id: bootimg
+      if: steps.root.outputs.status == 'success' && !cancelled()
     - name: Build Boot img
       id: bootimg
       if: steps.root.outputs.status == 'success' && !cancelled()
@@ -199,7 +209,7 @@ jobs:
         ver="${{ inputs.debian_version }}"
         if [ "$ver" = "trixie" ] || [ "$ver" = "bookworm" ]; then
           OSTYPE=debian
-        elif [ "$ver" = "noble" ] || [ "$ver" = "plucky" ]; then
+        elif [ "$ver" = "noble" ] || [ "$ver" = "plucky" ] || [ "$ver" = "resolute" ] ; then
           OSTYPE=ubuntu
         fi
         echo "OSTYPE=$OSTYPE" >> $GITHUB_ENV
@@ -218,7 +228,7 @@ jobs:
         else
           PKGS="$PKGS iwd"
         fi
-        if [ "$ver" = "trixie" ]; then
+        if [ "$ver" = "trixie" ] || [ "$ver" = "resolute" ]; then
           PKGS="$PKGS network-manager-iwd"
         fi
         if [[ -n "$PKGS" ]]; then
@@ -255,7 +265,7 @@ jobs:
         sudo mount --bind /sys rootfs/sys
         sudo cp /etc/resolv.conf rootfs/etc/resolv.conf
         sudo chroot rootfs /bin/bash -c "echo openstick > /etc/hostname"
-        sudo chroot rootfs /bin/bash -c "echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8"
+        sudo chroot rootfs /bin/bash -c "echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8"
         sudo chroot rootfs /bin/bash -c "cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime"
         sudo chroot rootfs /bin/bash -c "echo 'export TERM=xterm-256color' >> /etc/profile"
         sudo chroot rootfs /bin/bash -c "sed -i 's/^#\?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config"
@@ -265,10 +275,12 @@ jobs:
         sudo cp $GITHUB_WORKSPACE/workspace/files/10-uname rootfs/etc/update-motd.d/
         sudo chmod +x rootfs/etc/update-motd.d/10-uname
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/usr rootfs/
-        # sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/f2fs_resize rootfs/etc/initramfs-tools/hooks/
-        # sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/resize-f2fs rootfs/etc/initramfs-tools/scripts/init-premount/
-        # sudo chmod +x rootfs/etc/initramfs-tools/hooks/f2fs_resize
-        # sudo chmod +x rootfs/etc/initramfs-tools/scripts/init-premount/resize-f2fs
+        if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
+        	sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/f2fs_resize rootfs/etc/initramfs-tools/hooks/
+        	sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/files/resize-f2fs rootfs/etc/initramfs-tools/scripts/init-premount/
+        	sudo chmod +x rootfs/etc/initramfs-tools/hooks/f2fs_resize
+        	sudo chmod +x rootfs/etc/initramfs-tools/scripts/init-premount/resize-f2fs
+        fi
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/local/bin/*.sh"
         sudo chroot rootfs /bin/bash -c "chmod +x /usr/sbin/*.sh"
         sudo chroot rootfs /bin/bash -c "rm -f /root/*dbg*"
@@ -316,9 +328,11 @@ jobs:
         echo "✅ 使用的 initrd: $INITRD"
         cp $INITRD $GITHUB_WORKSPACE/artifacts/
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
-          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2,commit=5 console=ttyMSM0,115200 audit=0 no_framebuffer=true rw"
+          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2,commit=5 console=ttyMSM0,115200 audit=0 rw"
+        elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
+          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootfstype=f2fs rootflags=defaults,noatime,compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard console=ttyMSM0,115200 rw audit=0"
         else
-          CMDLINE="earlycon root=LABEL=rootfs console=ttyMSM0,115200 audit=0 no_framebuffer=true rw"
+        	CMDLINE="earlycon root=LABEL=rootfs console=ttyMSM0,115200 audit=0 rw"
         fi
         echo "✅ 使用的 cmdline: $CMDLINE"
         mkbootimg \
@@ -342,7 +356,11 @@ jobs:
         sudo umount rootfs/dev/pts
         sudo umount rootfs/dev
         sudo umount rootfs/sys
-        sudo rsync -axv rootfs/* img
+        if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
+        	fakeroot sload.f2fs -f rootfs -c -a zstd -l 64 -x gz,zip,png,jpg,xz,tgz,deb root.img
+        else
+        	sudo rsync -axv rootfs/* img
+        fi
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
           sudo chroot img /bin/bash -c "chattr +C /var/cache"
           sudo chroot img /bin/bash -c "chattr +C /var/tmp"
