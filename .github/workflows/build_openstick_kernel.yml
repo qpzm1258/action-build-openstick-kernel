@@ -82,10 +82,7 @@ jobs:
 
     # 2-1. 获取本项目源码
     - name: Checkout Workflow Repo
-      uses: actions/checkout@v4    # 7. 生成boot.img
-    - name: Build Boot img
-      id: bootimg
-      if: steps.root.outputs.status == 'success' && !cancelled()
+      uses: actions/checkout@v4
       with:
         lfs: true
         submodules: recursive
@@ -188,10 +185,7 @@ jobs:
         fi
         echo "status=success" >>$GITHUB_OUTPUT
   
-    # 7. 生成boot.img    # 7. 生成boot.img
-    - name: Build Boot img
-      id: bootimg
-      if: steps.root.outputs.status == 'success' && !cancelled()
+    # 7. 生成boot.img
     - name: Build Boot img
       id: bootimg
       if: steps.root.outputs.status == 'success' && !cancelled()
