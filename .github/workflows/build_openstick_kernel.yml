@@ -52,7 +52,6 @@ on:
         options:
           - btrfs
           - ext4
-          - f2fs
 
 jobs:
   build_debian:
