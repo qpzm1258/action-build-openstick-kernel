@@ -82,7 +82,7 @@ jobs:
 
     # 2-1. 获取本项目源码
     - name: Checkout Workflow Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         lfs: true
         submodules: recursive
@@ -90,7 +90,7 @@ jobs:
 
     # 2-2. 获取内核源码
     - name: Checkout Kernel Source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: msm8916-mainline/linux
         ref: ${{ inputs.kernel_version }}  # 使用输入的内核版本
@@ -369,7 +369,7 @@ jobs:
     # 9. 上传制品
     - name: Upload Artifacts
       if: steps.kernel.outputs.status == 'success' && !cancelled()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: kernel-${{ steps.configure.outputs.kernel_ver }}-arm64-debs
         path: |
@@ -403,7 +403,7 @@ jobs:
         keep_minimum_runs: 3
 
     - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@master
+      uses: dev-drprasad/delete-older-releases@v0.3.4
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
         keep_latest: 3
