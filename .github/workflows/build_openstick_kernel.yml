@@ -351,7 +351,7 @@ jobs:
         sudo umount rootfs/dev
         sudo umount rootfs/sys
         if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-        	fakeroot sload.f2fs -f rootfs -c -a lz4 -m 64 -x gz,zip,png,jpg,xz,tgz,deb root.img
+        	fakeroot sload.f2fs -f rootfs -c -a lz4 -x gz,zip,png,jpg,xz,tgz,deb root.img
         else
         	sudo rsync -axv rootfs/* img
         fi
@@ -400,7 +400,9 @@ jobs:
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
       with:
-        retain_days: 1
+        token: ${{ secrets.GITHUB_TOKEN }}
+        repository: ${{ github.repository }}
+        retain_days: 7
         keep_minimum_runs: 3
 
     # 11. 删除旧的release
