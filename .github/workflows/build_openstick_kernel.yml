@@ -208,9 +208,9 @@ jobs:
         mkdir -p rootfs 
         mkdir -p img
         if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-          truncate -s 1500M  root.img
+          truncate -s 1610612736  root.img
         else
-          truncate -s 1G  root.img
+          truncate -s 1073741824 root.img
         fi
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
           sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
@@ -221,7 +221,7 @@ jobs:
           sudo losetup -fP root.img
           sudo mount -o sync /dev/loop0 img/
         elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-        	sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression -s 8 root.img
+        	sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression root.img
           sudo losetup -fP root.img
           sudo mount -t f2fs -o sync,compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard root.img img/
         fi
