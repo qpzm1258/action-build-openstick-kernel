@@ -82,7 +82,7 @@ jobs:
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-15-aarch64-linux-gnu \
           curl libdw-dev f2fs-tools mkbootimg debootstrap \
-          llvm clang llvm-dev llvm-tools
+          llvm clang lld
       #    wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
       #    sudo dpkg -i mkbootimg_34.0.5-12_all.deb
       #    wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.144_all.deb
