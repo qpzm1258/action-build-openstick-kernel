@@ -53,6 +53,14 @@ on:
           - btrfs
           - ext4
           - f2fs
+      cc_type:
+        description: 'Set cc type(e.g. gcc/clang)'
+        type: choice
+        default: gcc
+        required: true
+        options:
+          - gcc
+          - clang
 
 jobs:
   build_debian:
@@ -67,14 +75,14 @@ jobs:
     # 1. 环境初始化
     - name: Setup Build Environment
       run: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
         sudo apt-get install -y \
           build-essential libncurses-dev libssl-dev bc flex bison \
           gcc-15 g++-15 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-15-aarch64-linux-gnu \
-          curl libdw-dev f2fs-tools mkbootimg debootstrap
+          curl libdw-dev f2fs-tools mkbootimg debootstrap \
+          llvm clang llvm-dev llvm-tools
       #    wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
       #    sudo dpkg -i mkbootimg_34.0.5-12_all.deb
       #    wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.144_all.deb
@@ -102,18 +110,31 @@ jobs:
       id: configure
       run: |
         cd linux-src
+        export ARCH=$ARCH
+        if [ "${{ inputs.cc_type }}" = "clang" ]; then
+          export LD=ld.lld
+          export LLVM=1
+          export LLVM_IAS=1
+          unset CC
+          unset HOSTCC
+        else
+          export CC=gcc-15
+          export HOSTCC=gcc-15
+          unset LLVM
+          unset LLVM_IAS
+        fi
         if [ "${{ inputs.update_last_kernel_patch }}" == "true" ]; then
           chmod +x $GITHUB_WORKSPACE/workspace/update-kernel.sh
           $GITHUB_WORKSPACE/workspace/update-kernel.sh
         fi
         case "${{ inputs.config_profile }}" in
           defconfig)
-            make ARCH=$ARCH CC=gcc-15 HOSTCC=gcc-15 msm8916_defconfig
+            make msm8916_defconfig
             ;;
           custom)
-            make ARCH=$ARCH CC=gcc-15 HOSTCC=gcc-15 msm8916_defconfig
+            make msm8916_defconfig
             scripts/kconfig/merge_config.sh -m -Q .config  $GITHUB_WORKSPACE/workspace/.config # 使用仓库中的自定义配置
-            make ARCH=$ARCH CC=gcc-15 HOSTCC=gcc-15 olddefconfig
+            make olddefconfig
             ;;
         esac
         KERNEL_VER=$(make kernelversion)
@@ -127,9 +148,13 @@ jobs:
           echo "Kernel version is greater than 6.18, set CONFIG_CRYPTO_MD5=y and CONFIG_CRYPTO_SHA512=y to fix iwd issus"
           echo "CONFIG_CRYPTO_MD5=y" >> .config
           echo "CONFIG_CRYPTO_SHA512=y" >> .config
-          make ARCH=$ARCH CC=gcc-15 HOSTCC=gcc-15 olddefconfig
+          make olddefconfig
         fi
-        make ARCH=$ARCH CC=gcc-15 HOSTCC=gcc-15 savedefconfig
+        if [ "${{ inputs.cc_type }}" = "clang" ]; then
+          echo "LTO_CLANG_FULL=y" >> .config
+          make olddefconfig
+        fi
+        make savedefconfig
         git apply $GITHUB_WORKSPACE/workspace/patch/ufi.patch
         if [ ! -z "${{ inputs.localversion }}" ]; then
           sed -i "s/^CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"${{ inputs.localversion }}\"/" .config
@@ -148,12 +173,22 @@ jobs:
       run: |
         cd linux-src
         # 编译内核与模块
-        # make ARCH=$ARCH CC=gcc-15 HOSTCC=gcc-15 -j$(nproc) all
-        
+        # make -j$(nproc) all
+        export ARCH=$ARCH
+        if [ "${{ inputs.cc_type }}" = "clang" ]; then
+          export LD=ld.lld
+          export LLVM=1
+          export LLVM_IAS=1
+          unset CC
+          unset HOSTCC
+        else
+          export CC=gcc-15
+          export HOSTCC=gcc-15
+          unset LLVM
+          unset LLVM_IAS
+        fi
         # 生成DEB安装包
-        make ARCH=$ARCH \
-          CC=gcc-15 HOSTCC=gcc-15 \
-          KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
+        make KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
           KBUILD_DEBARCH=arm64 \
           -j$(nproc) \
           bindeb-pkg
