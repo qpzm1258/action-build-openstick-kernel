@@ -146,8 +146,8 @@ jobs:
           && [ "${{ inputs.update_last_kernel_patch }}" = "true" ]; then
           echo 'Rebase to $major.$minor release'
           git remote add upstream https://github.com/torvalds/linux.git
-          git fetch upstream v$major.$minor
-          git rebase upstream/v$major.$minor || git rebase --abort
+          git fetch v$major.$minor --tags
+          git rebase v$major.$minor || git rebase --abort
           echo $(make kernelversion)
         fi
         if [ "${{ inputs.update_last_kernel_patch }}" = "true" ]; then
