@@ -234,20 +234,18 @@ jobs:
       run: |
         mkdir -p rootfs 
         mkdir -p img
-        if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-          truncate -s 1610612736  root.img
-        else
-          truncate -s 1073741824 root.img
-        fi
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
+          truncate -s 1G root.img
           sudo mkfs.btrfs -O free-space-tree --metadata single --data single --label "rootfs" -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e root.img
           sudo losetup -fP root.img
           sudo mount -t btrfs -o compress=zstd,defaults,noatime,sync /dev/loop0 rootfs/
         elif [ "${{ inputs.rootfs_type }}" = "ext4" ]; then
+          truncate -s 1200M  root.img
           sudo mkfs.ext4 -L rootfs -m 0 -O ^has_journal -E lazy_itable_init=0,lazy_journal_init=0 -b 4096 -I 256 root.img
           sudo losetup -fP root.img
           sudo mount -o sync /dev/loop0 rootfs/
         elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
+          truncate -s 1500M  root.img
         	sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression root.img
           sudo losetup -fP root.img
           sudo mount -t f2fs -o sync,compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard /dev/loop0 rootfs/
