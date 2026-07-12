@@ -52,6 +52,7 @@ on:
         options:
           - btrfs
           - ext4
+          - f2fs
 
 jobs:
   build_debian:
@@ -73,11 +74,11 @@ jobs:
           gcc-15 g++-15 dpkg-dev kmod cpio rsync u-boot-tools \
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-15-aarch64-linux-gnu \
-          curl libdw-dev f2fs-tools fakeroot gh
-          wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
-          sudo dpkg -i mkbootimg_34.0.5-12_all.deb
-          wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.144_all.deb
-          sudo dpkg -i debootstrap_1.0.144_all.deb
+          curl libdw-dev f2fs-tools mkbootimg debootstrap
+      #    wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
+      #    sudo dpkg -i mkbootimg_34.0.5-12_all.deb
+      #    wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.144_all.deb
+      #    sudo dpkg -i debootstrap_1.0.144_all.deb
       # 安装编译依赖项 [5,6](@ref)
 
     # 2-1. 获取本项目源码
@@ -182,6 +183,8 @@ jobs:
           sudo mount -o sync /dev/loop0 img/
         elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
         	sudo mkfs.f2fs -l rootfs -U a7ab80e8-e9d1-e8cd-f157-93f69b1d141e -O extra_attr,inode_checksum,sb_checksum,compression -s 8 root.img
+          sudo losetup -fP root.img
+          sudo mount -t f2fs -o sync,compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard root.img img/
         fi
         echo "status=success" >>$GITHUB_OUTPUT
   
@@ -191,7 +194,7 @@ jobs:
       if: steps.root.outputs.status == 'success' && !cancelled()
       run: |
         sudo apt-get update
-        sudo apt-get install -y qemu-user-static binfmt-support
+        sudo apt-get install -y qemu-user-binfmt-hwe binfmt-support
         if [[ -f $GITHUB_WORKSPACE/workspace/packages.txt ]]; then
           PKGS=$(grep -vE '^\s*#' $GITHUB_WORKSPACE/workspace/packages.txt | tr '\n' ',' | sed 's/,$//')
           echo "📦 将安装的额外包: $PKGS"
@@ -350,13 +353,8 @@ jobs:
         sudo umount rootfs/dev/pts
         sudo umount rootfs/dev
         sudo umount rootfs/sys
-        if [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-          echo "Write root files to f2fs img."
-        	sudo sload.f2fs -f rootfs  root.img
-          echo "Finish to write root files to f2fs img."
-        else
-        	sudo rsync -axv rootfs/* img
-        fi
+        sudo rsync -axv rootfs/* img
+
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
           sudo chroot img /bin/bash -c "chattr +C /var/cache"
           sudo chroot img /bin/bash -c "chattr +C /var/tmp"
@@ -364,9 +362,7 @@ jobs:
           sudo chroot img /bin/bash -c "chattr +C /var/log"
         fi
         sudo sync
-        if [ "${{ inputs.rootfs_type }}" != "f2fs" ]; then
-          sudo umount img
-        fi
+        sudo umount img
         img2simg root.img $GITHUB_WORKSPACE/rootfs.img
         echo "status=success" >>$GITHUB_OUTPUT
 
