@@ -142,7 +142,9 @@ jobs:
         echo "Parsed version: $major.$minor"
         if echo "$version" | grep -q -- "-rc" \
           && [ "${{ inputs.update_last_kernel_patch }}" = "true" ]; then
-          echo 'Rebase to $major.$minor release'
+          echo "Rebase to $major.$minor release"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/torvalds/linux.git
           git fetch origin ${{ inputs.kernel_version }} --depth=1000
           git fetch upstream v$major.$minor
