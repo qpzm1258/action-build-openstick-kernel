@@ -136,7 +136,6 @@ jobs:
           unset LLVM_IAS
         fi
         KERNEL_VER=$(make kernelversion)
-        echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
         version="$KERNEL_VER"
         clean_version=$(echo "$version" | sed 's/-.*//' )
         IFS='.' read -r major minor _ <<< "$clean_version"
@@ -165,6 +164,7 @@ jobs:
             make olddefconfig
             ;;
         esac
+        echo "kernel_ver=$(make kernelversion)" >> $GITHUB_OUTPUT
         # 去掉 -rc 等后缀，只取前两位
         clean_version=$(echo "$version" | sed 's/-.*//' )
         IFS='.' read -r major minor _ <<< "$clean_version"
