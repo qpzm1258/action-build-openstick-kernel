@@ -83,7 +83,7 @@ jobs:
         large-packages: true
         docker-images: true
         swap-storage: true
-        
+
     - name: Setup Build Environment
       run: |
         sudo apt-get update
@@ -401,6 +401,7 @@ jobs:
         sudo umount rootfs/dev/pts
         sudo umount rootfs/dev
         sudo umount rootfs/sys
+        du -sh rootfs
         sudo rsync -axv rootfs/* img
 
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
