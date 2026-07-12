@@ -141,8 +141,7 @@ jobs:
         clean_version=$(echo "$version" | sed 's/-.*//' )
         IFS='.' read -r major minor _ <<< "$clean_version"
         echo "Parsed version: $major.$minor"
-        if echo "$version" | grep -q -- "-rc" \
-          && [ "${{ inputs.update_last_kernel_patch }}" = "true" ]; then
+        if echo "$version" | grep -q -- "-rc"; then
           echo "Rebase to $major.$minor release"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
