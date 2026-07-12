@@ -73,6 +73,17 @@ jobs:
 
     steps:
     # 1. 环境初始化
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: false     # 保留 Python
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+        
     - name: Setup Build Environment
       run: |
         sudo apt-get update
