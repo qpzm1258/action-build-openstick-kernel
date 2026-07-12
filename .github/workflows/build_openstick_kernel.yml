@@ -233,13 +233,11 @@ jobs:
         else
           sudo DEBIAN_FRONTEND=noninteractive debootstrap --foreign --arch=arm64 --variant=minbase --components="$DEBSRC" ${{ inputs.debian_version }} rootfs "$DEBURL"
         fi
-        sudo cp /usr/bin/qemu-aarch64-static rootfs/usr/bin/
         sudo chroot rootfs /debootstrap/debootstrap --second-stage
         echo "root:1" | sudo chroot rootfs chpasswd
         sudo chroot rootfs useradd -m -s /bin/bash klipper
         echo "klipper:1" | sudo chroot rootfs chpasswd
         sudo chroot rootfs usermod -aG sudo klipper
-        sudo rm rootfs/usr/bin/qemu-aarch64-static
         sudo cp -r --update=none $GITHUB_WORKSPACE/workspace/firmware rootfs/usr/lib/
         sudo chmod -R 644 rootfs/usr/lib/firmware
         sudo cp -a --update=none $GITHUB_WORKSPACE/workspace/files/system/* rootfs/etc/systemd/system
