@@ -25,6 +25,7 @@ on:
           - 'wip/msm8916/6.18-rc6'
           - 'wip/msm8916/6.19'
           - 'wip/msm8916/7.0'
+          - 'wip/msm8916/7.1-rc6'
       update_last_kernel_patch:
         description: 'Do you want to update the kernel to the latest patch?'
         required: true
