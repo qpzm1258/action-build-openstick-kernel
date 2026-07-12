@@ -20,8 +20,9 @@ on:
         type: choice
         default: 'v6.12.1-msm8916'
         options:
-          - 'v6.12.1-msm8916'
           - 'v6.6-msm8916'
+          - 'v6.12.1-msm8916'
+          - 'wip/msm8916/6.18-rc6'
           - 'wip/msm8916/6.19'
           - 'wip/msm8916/7.0'
       update_last_kernel_patch:
@@ -115,6 +116,7 @@ jobs:
         repository: msm8916-mainline/linux
         ref: ${{ inputs.kernel_version }}  # 使用输入的内核版本
         path: linux-src
+        fetch-depth: 0
 
     # 3. 内核配置
     - name: Configure Kernel
@@ -134,7 +136,21 @@ jobs:
           unset LLVM
           unset LLVM_IAS
         fi
-        if [ "${{ inputs.update_last_kernel_patch }}" == "true" ]; then
+        KERNEL_VER=$(make kernelversion)
+        echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
+        version="$KERNEL_VER"
+        clean_version=$(echo "$version" | sed 's/-.*//' )
+        IFS='.' read -r major minor _ <<< "$clean_version"
+        echo "Parsed version: $major.$minor"
+        if echo "$version" | grep -q -- "-rc" \
+          && [ "${{ inputs.update_last_kernel_patch }}" = "true" ]; then
+          echo 'Rebase to $major.$minor release'
+          git remote add upstream https://github.com/torvalds/linux.git
+          git fetch upstream v$major.$minor
+          git rebase upstream/v$major.$minor || git rebase --abort
+          echo $(make kernelversion)
+        fi
+        if [ "${{ inputs.update_last_kernel_patch }}" = "true" ]; then
           chmod +x $GITHUB_WORKSPACE/workspace/update-kernel.sh
           $GITHUB_WORKSPACE/workspace/update-kernel.sh
         fi
@@ -148,9 +164,6 @@ jobs:
             make olddefconfig
             ;;
         esac
-        KERNEL_VER=$(make kernelversion)
-        echo "kernel_ver=$KERNEL_VER" >> $GITHUB_OUTPUT
-        version="$KERNEL_VER"
         # 去掉 -rc 等后缀，只取前两位
         clean_version=$(echo "$version" | sed 's/-.*//' )
         IFS='.' read -r major minor _ <<< "$clean_version"
