@@ -8,20 +8,21 @@ case $1 in
 esac
 
 ROOTDEV="/dev/mmcblk0p14"
-MARKER="/etc/.resized"
+FLAG_FILE="/var/lib/resize-rootfs.done"
 
 # mount rootfs readonly
 mkdir -p /tmp_root
 mount -o ro $ROOTDEV /tmp_root
 
-if [ -f /tmp_root$MARKER ]; then
+if [ -f /tmp_root$FLAG_FILE ]; then
     echo "Rootfs already resized, skipping."
 else
     echo "Resizing rootfs..."
     umount /tmp_root
     resize.f2fs -f $ROOTDEV || echo "resize.f2fs failed"
     mount -o rw $ROOTDEV /tmp_root
-    touch /tmp_root$MARKER
+    mkdir -p /tmp_root$(dirname $FLAG_FILE)
+    touch /tmp_root$FLAG_FILE
 fi
 
 umount /tmp_root
