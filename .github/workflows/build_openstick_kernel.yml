@@ -206,6 +206,7 @@ jobs:
           export LD=ld.lld
           export LLVM=1
           export LLVM_IAS=1
+          export KALLSYMS_EXTRA_PASS=1
           unset CC
           unset HOSTCC
         else
@@ -213,6 +214,7 @@ jobs:
           export HOSTCC=gcc-15
           unset LLVM
           unset LLVM_IAS
+          unset KALLSYMS_EXTRA_PASS
         fi
         # 生成DEB安装包
         make KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
