@@ -179,7 +179,7 @@ jobs:
           make olddefconfig
         fi
         if [ "${{ inputs.cc_type }}" = "clang" ]; then
-          echo "LTO_CLANG_FULL=y" >> .config
+          echo "CONFIG_LTO_CLANG_THIN=y" >> .config
           make olddefconfig
         fi
         make savedefconfig
