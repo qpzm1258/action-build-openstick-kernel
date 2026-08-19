@@ -26,6 +26,7 @@ on:
           - 'wip/msm8916/6.19'
           - 'wip/msm8916/7.0'
           - 'wip/msm8916/7.1-rc6'
+          - 'wip/msm8916/7.2-rc1'
       update_last_kernel_patch:
         description: 'Do you want to update the kernel to the latest patch?'
         required: true
@@ -146,7 +147,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/torvalds/linux.git
-          git fetch origin ${{ inputs.kernel_version }} --depth=1000
+          git fetch origin ${{ inputs.kernel_version }} --unshallow
           git fetch upstream v$major.$minor
           git tag v${major}.${minor} FETCH_HEAD
           git rebase v$major.$minor || git rebase --abort
