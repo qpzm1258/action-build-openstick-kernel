@@ -85,7 +85,7 @@ jobs:
           debhelper libelf-dev libssl-dev coreutils \
           android-sdk-libsparse-utils wget gcc-15-aarch64-linux-gnu \
           curl libdw-dev f2fs-tools mkbootimg debootstrap \
-          llvm clang lld
+          llvm clang lld fakeroot
       #    wget http://ftp.debian.org/debian/pool/main/a/android-platform-tools/mkbootimg_34.0.5-12_all.deb
       #    sudo dpkg -i mkbootimg_34.0.5-12_all.deb
       #    wget http://ftp.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.144_all.deb
@@ -209,8 +209,8 @@ jobs:
         # 生成DEB安装包
         make KDEB_PKGVERSION=1.${{ env.DEB_VERSION }} \
           KBUILD_DEBARCH=arm64 \
-          -j$(nproc) \
-          bindeb-pkg
+          -j$(nproc) 
+        fakeroot make -j1 bindeb-pkg
         # DEB打包方法 [6](@ref)
         
         # 重命名输出文件
