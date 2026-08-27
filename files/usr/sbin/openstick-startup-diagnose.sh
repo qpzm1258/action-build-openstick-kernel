@@ -41,30 +41,7 @@ set_usb_mode() {
     return
   fi
   echo "$1" > ${USB_ROLE_DEBUG}
-  RC=$?
-  # For newer kernels (>= 7.2) there is a role-switch interface under
-  # /sys/class/usb_role/...-role-switch/role. If present and kernel
-  # version is >= 7.2, write corresponding role strings there as well.
-  ROLE_SWITCH=/sys/class/usb_role/ci_hdrc.0-role-switch/role
-  if [ -e "$ROLE_SWITCH" ]; then
-    KVER=$(uname -r)
-    KMAJOR=$(printf '%s' "$KVER" | awk -F. '{print $1}')
-    KMINOR=$(printf '%s' "$KVER" | awk -F. '{print $2}')
-    DO_SWITCH=0
-    if [ "$KMAJOR" -gt 7 ]; then
-      DO_SWITCH=1
-    elif [ "$KMAJOR" -eq 7 ] && [ "$KMINOR" -ge 2 ]; then
-      DO_SWITCH=1
-    fi
-    if [ "$DO_SWITCH" -eq 1 ]; then
-      if [ "$1" = "gadget" ]; then
-        echo device > "$ROLE_SWITCH"
-      elif [ "$1" = "host" ]; then
-        echo host > "$ROLE_SWITCH"
-      fi
-    fi
-  fi
-  return $RC
+  return $?
 }
 
 set_usb_gadget_mode() {
@@ -315,3 +292,4 @@ main() {
 
 # start routine
 main
+
