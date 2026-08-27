@@ -21,6 +21,20 @@ USB_DEBUG=/sys/kernel/debug/usb/ci_hdrc.0
 USB_ROLE_DEBUG=$UDC_SYSFS/device/role
 USB_REGISTER_DEBUG=$USB_DEBUG/registers
 CONFIGFS_GADGET=/sys/kernel/config/usb_gadget
+ROLE_SWITCH=/sys/class/usb_role/ci_hdrc.0-role-switch/role
+
+KERN_GE_7_2=0
+KERN_RAW=$(uname -r)
+clean_version=$(echo "$KERN_RAW" | sed 's/-.*//')
+major=0
+minor=0
+IFS='.' read -r major minor _ <<EOF
+$clean_version
+EOF
+
+if [ "$major" -gt 7 ] || ([ "$major" -eq 7 ] && [ "$minor" -ge 2 ]); then
+    KERN_GE_7_2=1
+fi
 
 load_modules() {
   modprobe libcomposite
@@ -30,8 +44,8 @@ create_gadget() {
   # read https://www.kernel.org/doc/html/v5.19/usb/gadget_configfs.html
   ## basics
   # currently only one gadget is supported
-  rm -rf ${CONFIGFS_GADGET}/g1  # cleanup old gadgets
-  mkdir ${CONFIGFS_GADGET}/g1
+#  rm -rf ${CONFIGFS_GADGET}/g1  # cleanup old gadgets
+  mkdir -p ${CONFIGFS_GADGET}/g1
   echo "0x18d1" > ${CONFIGFS_GADGET}/idVendor
   echo "0xd001" > ${CONFIGFS_GADGET}/idProduct
   # strings
@@ -50,10 +64,19 @@ create_gadget() {
 }
 
 get_usb_role() {
-  cat ${USB_ROLE_DEBUG}
+  if [ -e "${USB_ROLE_DEBUG}" ]; then
+    cat "${USB_ROLE_DEBUG}"
+  else
+    echo "host"
+  fi
 }
 
 is_gadget_mode() {
+  if [ "$KERN_GE_7_2" -eq 1 ]; then
+    if [ ! -e "${UDC_SYSFS}" ]; then
+      return 1
+    fi
+  fi
   [ "gadget" = "$(get_usb_role)" ]
 }
 
@@ -67,7 +90,17 @@ set_usb_mode() {
   if [ "$1" = "$CURRENT_USB_ROLE" ]; then
     return
   fi
+
+  if [ "$KERN_GE_7_2" -eq 1 ]; then
+    if [ "$1" = "gadget" ]; then
+      echo device > "$ROLE_SWITCH" 2>/dev/null || logger "Failed to write 'device' to $ROLE_SWITCH"
+      echo "$1" > ${USB_ROLE_DEBUG}
+    elif [ "$1" = "host" ]; then
+      echo host > "$ROLE_SWITCH" 2>/dev/null || logger "Failed to write 'host' to $ROLE_SWITCH"
+    fi
+  else
   echo "$1" > ${USB_ROLE_DEBUG}
+  fi
   return $?
 }
 
