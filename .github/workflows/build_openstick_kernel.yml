@@ -14,6 +14,7 @@ on:
           - noble
           - plucky
           - resolute
+          - stonking
       kernel_version:
         description: 'Kernel version (e.g. v6.6)'
         required: true
@@ -27,6 +28,7 @@ on:
           - 'wip/msm8916/7.0'
           - 'wip/msm8916/7.1-rc6'
           - 'wip/msm8916/7.2-rc1'
+          - 'wip/msm8916/7.3-rc2'
       update_last_kernel_patch:
         description: 'Do you want to update the kernel to the latest patch?'
         required: true
