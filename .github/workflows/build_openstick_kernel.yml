@@ -267,7 +267,7 @@ jobs:
         ver="${{ inputs.debian_version }}"
         if [ "$ver" = "trixie" ] || [ "$ver" = "bookworm" ]; then
           OSTYPE=debian
-        elif [ "$ver" = "noble" ] || [ "$ver" = "plucky" ] || [ "$ver" = "resolute" ] ; then
+        elif [ "$ver" = "noble" ] || [ "$ver" = "plucky" ] || [ "$ver" = "resolute" ] || [ "$ver" = "stonking" ] ; then
           OSTYPE=ubuntu
         fi
         echo "OSTYPE=$OSTYPE" >> $GITHUB_ENV
@@ -286,7 +286,7 @@ jobs:
         else
           PKGS="$PKGS iwd"
         fi
-        if [ "$ver" = "trixie" ] || [ "$ver" = "resolute" ]; then
+        if [ "$ver" = "trixie" ] || [ "$ver" = "resolute" ] || [ "$ver" = "stonking" ]; then
           PKGS="$PKGS network-manager-iwd"
         fi
         if [[ -n "$PKGS" ]]; then
