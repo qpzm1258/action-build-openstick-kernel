@@ -1,0 +1,64 @@
+From ec4a21c3790c5fd517ebdffc5ed5c8c6fa5b8844 Mon Sep 17 00:00:00 2001
+From: qpzm1258 <qpzm1258@163.com>
+Date: Wed, 18 Nov 2026 13:58:13 +0800
+Subject: [PATCH] soc: qcom: smsm: Skip mailbox lookup for empty phandles
+
+The SMSM device tree node describes the mailbox of every remote host in
+the "mboxes" property. Hosts that have no mailbox are represented by an
+empty phandle, e.g. on MSM8916:
+
+	mboxes = <0>, <&apcs 13>, <0>, <&apcs 19>;
+
+smsm_parse_mbox() requests a channel for each host index, which makes
+mbox_request_channel() parse the entry at that index. The OF core
+reports an empty phandle as -ENOENT, but the mailbox core logs any
+parse failure with dev_err(), so the description above produces a
+spurious error for every host without a mailbox:
+
+	smsm: mbox_request_channel: can't parse "mboxes" property
+
+A missing mailbox is an expected condition rather than a failure: probe
+falls back to the legacy qcom,ipc-N interface for such hosts. Look the
+entry up first and only request a channel when the phandle is actually
+present, so that the parse error is no longer logged.
+
+Fixes: 75287992f58a ("soc: qcom: smsm: Support using mailbox interface")
+Cc: stable@vger.kernel.org
+Signed-off-by: qpzm1258 <qpzm1258@163.com>
+---
+ drivers/soc/qcom/smsm.c | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/soc/qcom/smsm.c b/drivers/soc/qcom/smsm.c
+index 021e9d1f61dc..01125e53f6ea 100644
+--- a/drivers/soc/qcom/smsm.c
++++ b/drivers/soc/qcom/smsm.c
+@@ -376,7 +376,24 @@ static const struct irq_domain_ops smsm_irq_ops = {
+ static int smsm_parse_mbox(struct qcom_smsm *smsm, unsigned int host_id)
+ {
+ 	struct smsm_host *host = &smsm->hosts[host_id];
+-	int ret = 0;
++	struct of_phandle_args args;
++	int ret;
++
++	/*
++	 * The mboxes property may contain empty phandles (e.g. <0>) to
++	 * indicate that the host at that index simply has no mailbox. The
++	 * OF core reports such an entry as -ENOENT, which
++	 * mbox_request_channel() would otherwise log as a parse failure,
++	 * even though it is an expected condition. Check the entry ourselves
++	 * first so that only real mailboxes are requested; the caller falls
++	 * back to the qcom,ipc-N interface when we return an error.
++	 */
++	ret = of_parse_phandle_with_args(smsm->dev->of_node, "mboxes",
++					 "#mbox-cells", host_id, &args);
++	if (ret)
++		return ret;
++
++	of_node_put(args.np);
+ 
+ 	host->mbox_chan = mbox_request_channel(&smsm->mbox_client, host_id);
+ 	if (IS_ERR(host->mbox_chan)) {
+-- 
+2.25.1
+
