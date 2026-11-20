@@ -387,11 +387,11 @@ jobs:
         echo "✅ 使用的 initrd: $INITRD"
         cp $INITRD $GITHUB_WORKSPACE/artifacts/
         if [ "${{ inputs.rootfs_type }}" = "btrfs" ]; then
-          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2,commit=5 console=ttyMSM0,115200 fw_devlink=permissive audit=0 rw"
+          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootflags=compress=zstd,defaults,noatime,discard=async,autodefrag,space_cache=v2,commit=5 console=ttyMSM0,115200 audit=0 rw"
         elif [ "${{ inputs.rootfs_type }}" = "f2fs" ]; then
-          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootfstype=f2fs rootflags=defaults,noatime,compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard console=ttyMSM0,115200 fw_devlink=permissive rw audit=0"
+          CMDLINE="earlycon root=PARTUUID=a7ab80e8-e9d1-e8cd-f157-93f69b1d141e rootfstype=f2fs rootflags=defaults,noatime,compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime,discard console=ttyMSM0,115200 rw audit=0"
         else
-        	CMDLINE="earlycon root=LABEL=rootfs console=ttyMSM0,115200 audit=0 fw_devlink=permissive rw"
+        	CMDLINE="earlycon root=LABEL=rootfs console=ttyMSM0,115200 audit=0 rw"
         fi
         echo "✅ 使用的 cmdline: $CMDLINE"
         mkbootimg \
