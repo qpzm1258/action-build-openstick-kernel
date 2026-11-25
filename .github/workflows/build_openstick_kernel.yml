@@ -167,7 +167,7 @@ jobs:
           git apply $GITHUB_WORKSPACE/workspace/patch/smsm-empty-phandle.patch
         fi
         if (( major > 6 )) || { (( major = 6 )) && (( minor > 8 )); }; then
-          git apply $GITHUB_WORKSPACE/workspace/patch/post-init-providers-ufi001c.patch
+          git apply $GITHUB_WORKSPACE/workspace/patch/post-init-providers-msm8916-dtsi.patch
         fi
         # if (( major > 6 )) || { (( major = 6 )) && (( minor > 18 )); }; then
         #   echo "Kernel version is greater than 6.18, set CONFIG_CRYPTO_MD5=y and CONFIG_CRYPTO_SHA512=y to fix iwd issus"

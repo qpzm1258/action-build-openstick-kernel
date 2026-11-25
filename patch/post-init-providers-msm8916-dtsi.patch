@@ -1,0 +1,16 @@
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 1331e0af880b..0668ca553ce9 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -2483,6 +2483,11 @@ usb_hs_phy: phy {
+ 								 <0x1 0x6b>,
+ 								 <0x2 0x24>,
+ 								 <0x3 0x13>;
++
++					/* RPM providers are not needed to initialize the USB HS PHY.
++					 * Mark them post-init so fw_devlink ignores the proxy link.
++					 */
++					post-init-providers = <&rpmcc>, <&rpmpd>;
+ 				};
+ 			};
+ 		};
